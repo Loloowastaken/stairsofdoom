@@ -117,32 +117,32 @@ public:
         return speed;
     }
 
-    void setName(const std::string &name) {
-        this->name = name;
+    void setName(const std::string &setname) {
+        this->name = setname;
     }
 
-    void setLevel(int level) {
-        this->level = level;
+    void setLevel(int setlevel) {
+        this->level = setlevel;
     }
 
-    void setHealth(int health) {
-        this->health = health;
+    void setHealth(int sethealth) {
+        this->health = sethealth;
     }
 
-    void setMaxHealth(int max_health) {
-        maxHealth = max_health;
+    void setMaxHealth(int setmax_health) {
+        maxHealth = setmax_health;
     }
 
-    void setAttackPower(int attack_power) {
-        attackPower = attack_power;
+    void setAttackPower(int setattack_power) {
+        attackPower = setattack_power;
     }
 
-    void setDefense(int defense) {
-        this->defense = defense;
+    void setDefense(int setdefense) {
+        this->defense = setdefense;
     }
 
-    void setSpeed(int speed) {
-        this->speed = speed;
+    void setSpeed(int setspeed) {
+        this->speed = setspeed;
     }
                                                             // ALTE METODE //
     void LevelUp() {
@@ -162,7 +162,7 @@ public:
     }
 protected:
     //Metoda helper pentru a calcula damage
-    int calculateDamage(const Character& target) const {
+    [[nodiscard]] int calculateDamage(const Character& target) const {
         int damage = attackPower - (target.defense/2);
         return (damage < 1) ? 1 : damage;
     }
@@ -185,27 +185,27 @@ std::ostream& operator<<(std::ostream& os, const Character& c) {
 }
 //Operator input
 std::istream& operator>>(std::istream& is, Character& c) {
-    std::string name;
-    int level, attack ,defense, speed;
+    std::string inputName;
+    int inputLevel, inputAttack , inputDefense, inputSpeed;
     std::cout << "Enter character name: ";
-    is >> name;
-    c.setName(name);
+    is >> inputName;
+    c.setName(inputName);
 
     std::cout << "Enter level: ";
-    is >> level;
-    c.setLevel(level);
+    is >> inputLevel;
+    c.setLevel(inputLevel);
 
     std::cout << "Enter attack power: ";
-    is >> attack;
-    c.setAttackPower(attack);
+    is >> inputAttack;
+    c.setAttackPower(inputAttack);
 
     std::cout << "Enter defense: ";
-    is >> defense;
-    c.setDefense(defense);
+    is >> inputDefense;
+    c.setDefense(inputDefense);
 
     std::cout << "Enter speed: ";
-    is >> speed;
-    c.setSpeed(speed);
+    is >> inputSpeed;
+    c.setSpeed(inputSpeed);
 
     return is;
 }
