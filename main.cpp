@@ -71,11 +71,11 @@ public:
                                                             // METODE VIRTUALE //
 
     //metoda pentru atac
-    /*virtual void attack(Character& target) {
+    virtual void attack(Character& target) {
         int damage= calculateDamage(target);
         std::cout << name << " ataca " << target.getName() << " pentru " << damage << " damage!\n ";
         target.takeDamage(damage);
-    }*/
+    }
     //metoda pentru a lua damage
     virtual void takeDamage(int damage) {
         int actualDamage = damage - defense;
@@ -102,9 +102,9 @@ public:
         return health;
     }
 
-    /*[[nodiscard]] int getMaxHealth() const {
+    [[nodiscard]] int getMaxHealth() const {
         return maxHealth;
-    }*/
+    }
 
     [[nodiscard]] int getAttackPower() const {
         return attackPower;
@@ -146,29 +146,29 @@ public:
         this->speed = setspeed;
     }
                                                             // ALTE METODE //
-    /*void LevelUp() {
+    void LevelUp() {
         level++;
         maxHealth += 20;
         health = maxHealth; // restore viata cand levelup
         attackPower += 5;
         defense += 3;
         speed += 1;
-    }*/
-    /*void displayStatus() const {
+    }
+    void displayStatus() const {
         std::cout << name << " [LVL " << level << "] "
                   << "HP: " << health << "/" << maxHealth
                   << " ATK: " << attackPower
                   << " DEF: " << defense
                   << " SPD: " << speed << std::endl;
-    }*/
+    }
+    //Metoda statica
+    static int getTotalCharacters() { return totalCharacters; }
 protected:
     //Metoda helper pentru a calcula damage
     [[nodiscard]] int calculateDamage(const Character& target) const {
         int damage = attackPower - (target.getDefense()/2);
         return (damage < 1) ? 1 : damage;
     }
-    //Metoda statica
-    //static int getTotalCharacters() { return totalCharacters; }
 };
 
 int Character::totalCharacters = 0;
@@ -224,5 +224,43 @@ bool operator==(const Character& c1, const Character& c2) {
 
 
 int main() {
-    return 0;
+    //Test class so CPPCheck will stfu
+    class TestCharacter : public Character {
+        public:
+        TestCharacter(const std::string& name, int level = 1)
+            : Character(name, level) {}
+
+        void specialAbility() override {
+            std::cout << "Special Ability\n";
+        }
+    };
+
+    TestCharacter hero("A",5);
+    TestCharacter enemy("B", 3);
+
+    std::cout<< "Hero health before: " << hero.getHealth() << std::endl;
+    hero.takeDamage(20);
+    std::cout<< "Hero health after taking 20 damage: " << hero.getHealth() << std::endl;
+
+    std::cout << "\nCombat test:\n";
+    hero.attack(enemy);
+
+    hero.displayStatus();
+    enemy.displayStatus();
+
+    std::cout<<"Operator tests:\n";
+    std::cout<< "Hero: " << hero << std::endl;
+    std::cout<< "Enemy: " << enemy << std::endl;
+
+    std::cout<<"\nTurn order (speed comparison)\n";
+    if (hero<enemy) {
+        std::cout << enemy.getName() << " goes first\n";
+    }
+    else {
+        std::cout << hero.getName() << " goes first\n";
+    }
+
+    std::cout<<"Total characters created: " << Character::getTotalCharacters()<<std::endl;
+
+
 }
