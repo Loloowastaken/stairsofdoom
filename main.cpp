@@ -38,6 +38,7 @@ public:
           attackPower(other.attackPower),
           defense(other.defense),
           speed(other.speed) {
+        totalCharacters++;
     }
                                                         // OPERATORI MEMBRI //
     //Operator de copiere
@@ -122,7 +123,7 @@ public:
     }
 
     void setLevel(int setlevel) {
-        this->level = setlevel;
+        this->level = (setlevel > 0) ? setlevel : 1;
     }
 
     void setHealth(int sethealth) {
@@ -130,11 +131,11 @@ public:
     }
 
     void setMaxHealth(int setmax_health) {
-        maxHealth = setmax_health;
+        this->maxHealth = setmax_health;
     }
 
     void setAttackPower(int setattack_power) {
-        attackPower = setattack_power;
+        this->attackPower = setattack_power;
     }
 
     void setDefense(int setdefense) {
@@ -163,7 +164,7 @@ public:
 protected:
     //Metoda helper pentru a calcula damage
     [[nodiscard]] int calculateDamage(const Character& target) const {
-        int damage = attackPower - (target.defense/2);
+        int damage = attackPower - (target.getDefense()/2);
         return (damage < 1) ? 1 : damage;
     }
     //Metoda statica
@@ -206,6 +207,9 @@ std::istream& operator>>(std::istream& is, Character& c) {
     std::cout << "Enter speed: ";
     is >> inputSpeed;
     c.setSpeed(inputSpeed);
+
+    c.setHealth(100+c.getLevel()*20);
+    c.setMaxHealth(c.getHealth());
 
     return is;
 }
