@@ -90,7 +90,7 @@ public:
         std::cout<< "Caracterul " << name << " distrus\n";
     }
                                                             // GETTERS/SETTERS //
-    [[nodiscard]] std::string getName() const {
+    [[nodiscard]] const std::string& getName() const {
         return name;
     }
 
