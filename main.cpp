@@ -71,11 +71,11 @@ public:
                                                             // METODE VIRTUALE //
 
     //metoda pentru atac
-    virtual void attack(Character& target) {
+    /*virtual void attack(Character& target) {
         int damage= calculateDamage(target);
         std::cout << name << " ataca " << target.getName() << " pentru " << damage << " damage!\n ";
         target.takeDamage(damage);
-    }
+    }*/
     //metoda pentru a lua damage
     virtual void takeDamage(int damage) {
         int actualDamage = damage - defense;
@@ -102,9 +102,9 @@ public:
         return health;
     }
 
-    [[nodiscard]] int getMaxHealth() const {
+    /*[[nodiscard]] int getMaxHealth() const {
         return maxHealth;
-    }
+    }*/
 
     [[nodiscard]] int getAttackPower() const {
         return attackPower;
@@ -146,21 +146,21 @@ public:
         this->speed = setspeed;
     }
                                                             // ALTE METODE //
-    void LevelUp() {
+    /*void LevelUp() {
         level++;
         maxHealth += 20;
         health = maxHealth; // restore viata cand levelup
         attackPower += 5;
         defense += 3;
         speed += 1;
-    }
-    void displayStatus() const {
+    }*/
+    /*void displayStatus() const {
         std::cout << name << " [LVL " << level << "] "
                   << "HP: " << health << "/" << maxHealth
                   << " ATK: " << attackPower
                   << " DEF: " << defense
                   << " SPD: " << speed << std::endl;
-    }
+    }*/
 protected:
     //Metoda helper pentru a calcula damage
     [[nodiscard]] int calculateDamage(const Character& target) const {
@@ -168,7 +168,7 @@ protected:
         return (damage < 1) ? 1 : damage;
     }
     //Metoda statica
-    static int getTotalCharacters() { return totalCharacters; }
+    //static int getTotalCharacters() { return totalCharacters; }
 };
 
 int Character::totalCharacters = 0;
