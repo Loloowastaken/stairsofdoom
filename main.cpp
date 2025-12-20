@@ -170,7 +170,7 @@ protected:
 public:
                                                             // CONSTRUCTORI (apeland clasa de baza) //
     //Constructor default
-    Player(const std::string &name)
+    explicit Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
           gold(50), experience(0), experienceToNext(100) {
         inventory.push_back("Basic Sword");
@@ -358,19 +358,19 @@ public:
         }
     }
                                                             // METODE SPECIFICE INAMICULUI //
-    int calculateReward() const {
+    [[nodiscard]] int calculateReward() const {
         int reward = baseReward;
         if (type == EnemyType::ORC) reward*=2; // dublu gold de la orci
         if (type == EnemyType::SLIME) reward/=2; // jumate gold de la slime
         return reward;
     }
 
-    bool isBoss() const {
+    [[nodiscard]] bool isBoss() const {
         return getLevel()>=10; // Inamici peste level 10 sunt considerati bossi
     }
                                                             // GETTERI SI SETTERI //
-    EnemyType getType() const { return type; }
-    const std::string & getDescription() const { return description; }
+    [[nodiscard]] EnemyType getType() const { return type; }
+    [[nodiscard]] const std::string & getDescription() const { return description; }
     void setDescription() {
         switch (type) {
             case EnemyType::GOBLIN:
@@ -381,6 +381,7 @@ public:
                 break;
             case EnemyType::ORC:
                 description = "Barbar si puternic";
+                break;
             case EnemyType::SLIME:
                 description = "Monstru gelatinos";
                 break;
@@ -457,8 +458,8 @@ public:
         setSpeed(getSpeed()*2);
     }
                                                             // GETTERI //
-    const std::string& getTitle() const { return title; }
-    bool isInSpecialPhase() const { return hasSpecialPhase; }
+    [[nodiscard]] const std::string& getTitle() const { return title; }
+    [[nodiscard]] bool isInSpecialPhase() const { return hasSpecialPhase; }
 
     void displayBossInfo() const {
         displayStatus();
