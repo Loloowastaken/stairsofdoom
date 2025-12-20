@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <utility>
 #include <vector>
 #include <typeinfo>
 
@@ -23,9 +24,9 @@ public:
         totalCharacters++;
     }
     // Constructor parametrizat
-    Character(const std::string& name, int level, int health,
+    Character(std::string  name, int level, int health,
               int attackPower = 10, int defense = 5, int speed = 10)
-        : name(name), level(level), health(health), maxHealth(health),
+        : name(std::move(name)), level(level), health(health), maxHealth(health),
           attackPower(attackPower), defense(defense), speed(speed) {
         totalCharacters++;
     }
@@ -173,22 +174,18 @@ public:
     explicit Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
           gold(50), experience(0), experienceToNext(100) {
-        inventory.push_back("Basic Sword");
-        inventory.push_back("Leather Rags");
+        inventory.emplace_back("Basic Sword");
+        inventory.emplace_back("Leather Rags");
     }
     //Constructor parametrizat
     Player(const std::string &name, int level)
         : Character(name, level, 80+level*20, 12+level*3, 6+level*2, 12+level),
           gold(level*25), experience(0), experienceToNext(level*100) {
-        inventory.push_back("Basic Sword");
-        inventory.push_back("Leather Rags");
+        inventory.emplace_back("Basic Sword");
+        inventory.emplace_back("Leather Rags");
     }
     //Constructor copy
-    Player (const Player& other)
-        : Character(other),
-          gold(other.gold), experience(other.experience),
-          experienceToNext(other.experienceToNext),
-          inventory(other.inventory) {}
+    Player (const Player& other) = default;
                                                             // OPERATORI //
     // Operator copy
     Player &operator=(const Player& other) {
@@ -302,11 +299,7 @@ public:
     }
 
     // Constructor copy
-    Enemy(const Enemy& other)
-        : Character(other),  // Call base copy constructor
-          type(other.type), baseReward(other.baseReward),
-          description(other.description) {
-    }
+    Enemy(const Enemy& other) = default;
 
     // Operator copy
     Enemy& operator=(const Enemy& other) {
@@ -398,9 +391,9 @@ protected:
 public:
                                                             // CONSTRUCTORI //
     Boss(const std::string& name, Enemy::EnemyType type, int level,
-         const std::string& title)
+         std::string title)
         : Enemy(name, type, level),  // apeleaza constructorul 'Enemy'
-          title(title), hasSpecialPhase(false),
+          title(std::move(title)), hasSpecialPhase(false),
           specialPhaseThreshold(getMaxHealth() / 2) {
         // Bossi sunt mai puternici
         setMaxHealth(getMaxHealth()*2);
@@ -410,11 +403,7 @@ public:
     }
 
     // Constructor copy
-    Boss(const Boss& other)
-        : Enemy(other),  // Apeleaza constructorul copy de la Enemy
-          title(other.title), hasSpecialPhase(other.hasSpecialPhase),
-          specialPhaseThreshold(other.specialPhaseThreshold) {
-    }
+    Boss(const Boss& other) = default;
 
     // Operatorul copy
     Boss& operator=(const Boss& other) {
@@ -500,18 +489,18 @@ int main() {
 
     for (Character* ptr : characters) {
         // Incercam downcast la Player
-        if (Player* playerPtr = dynamic_cast<Player*>(ptr)) {
+        if (auto* playerPtr = dynamic_cast<Player*>(ptr)) {
             std::cout << " - Gasit Player: " << playerPtr->getName()
                       << " (Aur: " << playerPtr->getGold() << ")\n";
             playerPtr->showInventory();
         }
         // Incercam downcast la Enemy
-        else if (Enemy* enemy_Ptr = dynamic_cast<Enemy*>(ptr)) {
+        else if (auto* enemy_Ptr = dynamic_cast<Enemy*>(ptr)) {
             std::cout<< " - Gasit Enemy: " << enemy_Ptr->getName()
                     << " (Reward: " << enemy_Ptr->calculateReward() << " gold)\n";
         }
         // Incercam downcast la Boss
-        else if (Boss* bossPtr = dynamic_cast<Boss*>(ptr)) {
+        else if (auto* bossPtr = dynamic_cast<Boss*>(ptr)) {
             std::cout<< " Este un BOSS: " << bossPtr->getTitle() << "\n";
         }
     }
