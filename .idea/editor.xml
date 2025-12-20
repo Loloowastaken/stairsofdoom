@@ -346,20 +346,13 @@
     <option name="/Default/CodeStyle/Generate/=CppConstructor/Options/=AccessRight/@EntryIndexedValue" value="public" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppConstructor/Options/=DeclareConstructorsNodiscard/@EntryIndexedValue" value="False" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppConstructor/Options/=UseConstParameterTypes/@EntryIndexedValue" value="False" type="string" />
-    <option name="/Default/CodeStyle/Generate/=CppCopyAndMoveOperations/@KeyIndexDefined" value="true" type="bool" />
-    <option name="/Default/CodeStyle/Generate/=CppCopyAndMoveOperations/Options/=AccessRight/@EntryIndexedValue" value="public" type="string" />
-    <option name="/Default/CodeStyle/Generate/=CppCopyAndMoveOperations/Options/=CopyOperationsKind/@EntryIndexedValue" value="implement" type="string" />
-    <option name="/Default/CodeStyle/Generate/=CppCopyAndMoveOperations/Options/=MakeMoveOperationsNoexcept/@EntryIndexedValue" value="True" type="string" />
-    <option name="/Default/CodeStyle/Generate/=CppCopyAndMoveOperations/Options/=MoveOperationsKind/@EntryIndexedValue" value="implement" type="string" />
-    <option name="/Default/CodeStyle/Generate/=CppCopyAndMoveOperations/Options/=SwapBasedAssignment/@EntryIndexedValue" value="False" type="string" />
-    <option name="/Default/CodeStyle/Generate/=CppCopyAndMoveOperations/Options/=UseUniformInitialization/@EntryIndexedValue" value="False" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/@KeyIndexDefined" value="true" type="bool" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=AcceptParameterKind/@EntryIndexedValue" value="Const reference" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=AccessRight/@EntryIndexedValue" value="public" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=AddPrefixesToGetters/@EntryIndexedValue" value="False" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=AddPrefixesToSetters/@EntryIndexedValue" value="True" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=DeclareGettersNodiscard/@EntryIndexedValue" value="True" type="string" />
-    <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=GetterAndSetterKind/@EntryIndexedValue" value="Setter" type="string" />
+    <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=GetterAndSetterKind/@EntryIndexedValue" value="Getter and setter" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=InlineDefinition/@EntryIndexedValue" value="True" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=InsertVirtualSpecifier/@EntryIndexedValue" value="False" type="string" />
     <option name="/Default/CodeStyle/Generate/=CppGettersAndSetters/Options/=ReturnKind/@EntryIndexedValue" value="Value" type="string" />
