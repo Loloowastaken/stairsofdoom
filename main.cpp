@@ -7,7 +7,7 @@
 
                                                     /// !!!!! CLASA DE BAZA 'CHARACTER' !!!!! ///
 class Character {
-private:
+protected:
     std::string name;
     int level;
     int health;
