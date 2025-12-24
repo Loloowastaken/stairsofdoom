@@ -1,3 +1,20 @@
+
+/*                                                                                                                   ,----..       ,----..             ____
+  .--.--.       ___                                                                                   ,---,       /   /   \     /   /   \          ,'  , `.
+ /  /    '.   ,--.'|_                ,--,                                           .--.,           .'  .' `\    /   .     :   /   .     :      ,-+-,.' _ |
+|  :  /`. /   |  | :,'             ,--.'|    __  ,-.                       ,---.  ,--.'  \        ,---.'     \  .   /   ;.  \ .   /   ;.  \  ,-+-. ;   , ||
+;  |  |--`    :  : ' :             |  |,   ,' ,'/ /|  .--.--.             '   ,'\ |  | /\/        |   |  .`\  |.   ;   /  ` ;.   ;   /  ` ; ,--.'|'   |  ;|
+|  :  ;_    .;__,'  /    ,--.--.   `--'_   '  | |' | /  /    '           /   /   |:  : :          :   : |  '  |;   |  ; \ ; |;   |  ; \ ; ||   |  ,', |  ':
+ \  \    `. |  |   |    /       \  ,' ,'|  |  |   ,'|  :  /`./          .   ; ,. ::  | |-,        |   ' '  ;  :|   :  | ; | '|   :  | ; | '|   | /  | |  ||
+  `----.   \:__,'| :   .--.  .-. | '  | |  '  :  /  |  :  ;_            '   | |: :|  : :/|        '   | ;  .  |.   |  ' ' ' :.   |  ' ' ' :'   | :  | :  |,
+  __ \  \  |  '  : |__  \__\/: . . |  | :  |  | '    \  \    `.         '   | .; :|  |  .'        |   | :  |  ''   ;  \; /  |'   ;  \; /  |;   . |  ; |--'
+ /  /`--'  /  |  | '.'| ," .--.; | '  : |__;  : |     `----.   \        |   :    |'  : '          '   : | /  ;  \   \  ',  /  \   \  ',  / |   : |  | ,
+'--'.     /   ;  :    ;/  /  ,.  | |  | '.'|  , ;    /  /`--'  /         \   \  / |  | |          |   | '` ,/    ;   :    /    ;   :    /  |   : '  |/
+  `--'---'    |  ,   /;  :   .'   \;  :    ;---'    '--'.     /           `----'  |  : \          ;   :  .'       \   \ .'      \   \ .'   ;   | |`-'
+               ---`-' |  ,     .-./|  ,   /           `--'---'                    |  |,'          |   ,.'          `---`         `---`     |   ;/
+                       `--`---'     ---`-'                                        `--'            '---'                                    '---'
+*/
+
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -239,6 +256,33 @@ public:
                                                             // GETTERI //
     [[nodiscard]] int getValue() const { return value; }
     [[nodiscard]] const std::string& getName() const { return name; }
+};
+                                                            /// !!! IERARHIE DE EXCEPTII !!! ///
+class Exception : public std::exception {
+protected:
+    std::string message;
+public:
+    explicit Exception(std::string msg) : message(std::move(msg)) {}
+    ~Exception() override = default;
+    [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
+};
+
+class CombatException : public Exception {
+public:
+    explicit CombatException(std::string msg)
+        : Exception("Combat Error: " + std::move(msg)) {}
+};
+
+class InventoryException : public Exception {
+public:
+    explicit InventoryException(std::string msg)
+        : Exception("Inventory Error: " + std::move(msg)) {}
+};
+
+class PlayerDeathException : public CombatException {
+public:
+    PlayerDeathException()
+        : CombatException("Player has been defeated!") {}
 };
                                                             // !!!! CLASE DERIVATE !!!! //
                                                             /// CLASA 'PLAYER' - DERIVATA LUI 'CHARACTER' ///
