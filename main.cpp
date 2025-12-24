@@ -179,6 +179,93 @@ bool operator<(const Character& c1, const Character& c2) {
 bool operator==(const Character& c1, const Character& c2) {
     return c1.getLevel() == c2.getLevel() && c1.getAttackPower() == c2.getAttackPower();
 }
+                                                            /// !!!!! CLASA TEMPLATE ITEMCONTAINER !!!!! ///
+template<typename T>
+class ItemContainer {
+private:
+    std::vector<T> items;
+    static int totalContainers;
+    std::string containerName;
+public:
+                                                            // CONSTRUCTORI //
+    ItemContainer()
+        : containerName("Unnamed Container") {
+        totalContainers++;
+    }
+    explicit ItemContainer(std::string name)
+        : containerName(std::move(name)) {
+        totalContainers++;
+    }
+    //Constructor copy
+    ItemContainer(const ItemContainer& other)
+        : items(other.items),
+        containerName(other.containerName) {
+        totalContainers++;
+    }
+                                                            // DESTRUCTOR //
+    ~ItemContainer() {
+        totalContainers--;
+    }
+                                                            // METODE PUBLICE //
+    void addItem(const T& item) {
+        items.push_back(item);
+    }
+    bool removeItem(const T& item) {
+        auto it = std::find(items.begin(), items.end(), item);
+        if (it != items.end()) {
+            items.erase(it);
+            return true;
+        }
+        return false;
+    }
+    [[nodiscard]] size_t getItemCount() const { return items.size(); }
+    static int getTotalContainers() { return totalContainers; }
+
+    void display() const {
+        std::cout << containerName << " contains " << items.size() << " items\n";
+        for (const auto& item : items) {
+            std::cout<<" - " << item << "\n";
+        }
+    }
+
+    // Algoritm STL cu lambda
+    template<typename P>
+    int countIf(P p) const {
+        return std::count_if(items.begin(), items.end(), p);
+    }
+
+    // Pentru for loopuri bazate pe range
+    auto begin() { return items.begin(); }
+    auto end() { return items.end(); }
+    auto begin() const { return items.begin(); }
+    auto end() const { return items.end(); }
+};
+
+template<typename T>
+int ItemContainer<T>::totalContainers = 0;
+                                                            /// !!!! CLASA ITEM !!!! ///
+class Item {
+private:
+    std::string name;
+    int value;
+public:
+                                                            // CONSTRUCTOR //
+    explicit Item(std::string n = "", int v = 0)
+        : name(std::move(n)), value(v) {}
+                                                            // OPERATORI //
+    //pentru std::find ne trebuie ==
+    bool operator==(const Item& other) const {
+        return name == other.name && value == other.value;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Item& item) {
+        os << item.name << " (Value: " << item.value << ")";
+        return os;
+    }
+                                                            // GETTERI //
+    [[nodiscard]] int getValue() const { return value; }
+    [[nodiscard]] const std::string& getName() const { return name; }
+};
                                                             // !!!! CLASE DERIVATE !!!! //
                                                             /// CLASA 'PLAYER' - DERIVATA LUI 'CHARACTER' ///
 class Player : public Character {
@@ -186,7 +273,7 @@ protected:
     int gold;
     int experience;
     int experienceToNext;
-    std::vector<std::string> inventory;
+    ItemContainer<std::string> inventory;
     int heroicStrikeCooldown;
     int shieldBashCooldown;
 public:
@@ -194,18 +281,14 @@ public:
     //Constructor default
     explicit Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
-          gold(50), experience(0), experienceToNext(100),
+          gold(50), experience(0), experienceToNext(100), inventory("Player Inventory"),
           heroicStrikeCooldown(0), shieldBashCooldown(0) {
-        inventory.emplace_back("Basic Sword");
-        inventory.emplace_back("Leather Rags");
     }
     //Constructor supraincarcat
     Player(const std::string &name, int level)
         : Character(name, level, 80+level*20, 12+level*3, 6+level*2, 12+level),
           gold(level*25), experience(0), experienceToNext(level*100),
           heroicStrikeCooldown(0), shieldBashCooldown(0) {
-        inventory.emplace_back("Basic Sword");
-        inventory.emplace_back("Leather Rags");
     }
     //Constructor copy
     Player (const Player& other) = default;
@@ -301,15 +384,12 @@ public:
     }
 
     void addItem(const std::string& item) {
-        inventory.push_back(item);
+        inventory.addItem(item);
         std::cout << "Added " << item << " to inventory\n";
     }
 
     void showInventory() const {
-        std::cout << getName() << "'s Inventory" << " (" << inventory.size() << " items):\n";
-        for (const auto& item : inventory) {
-            std::cout << " - " << item << std::endl;
-        }
+        inventory.display();
         std::cout << "Gold: " << gold << "\n";
     }
                                                            // ABILITATI //
@@ -350,16 +430,6 @@ public:
     [[nodiscard]] int getExp() const { return experience; }
     void setGold(int setgold) { gold = setgold; }
     void setExp(int setexp) { experience = setexp; }
-
-                                                            // ALTE METODE //
-    //Metoda pentru demonstrarea downcastingului
-    void buyFromShop (const std::string& item, int cost) { // asta cred ca o sa o scot, eventual?
-        if (spendGold(cost)) {
-            addItem(item);
-            std::cout << "Bought: " << item << "\n";
-        }
-    }
-
 };
                                                             /// CLASA 'ENEMY' - DERIVATA LUI 'CHARACTER' ///
 class Enemy : public Character {
@@ -663,89 +733,7 @@ public:
         }
     }
 };
-                                                            /// !!!!! CLASA TEMPLATE ITEMCONTAINER !!!!! ///
-template<typename T>
-class ItemContainer {
-private:
-    std::vector<T> items;
-    static int totalContainers;
-    std::string containerName;
-public:
-                                                            // CONSTRUCTORI //
-    explicit ItemContainer(std::string name = "Container")
-        : containerName(std::move(name)) {
-        totalContainers++;
-    }
-    //Constructor copy
-    ItemContainer(const ItemContainer& other)
-        : items(other.items),
-        containerName(other.containerName) {
-        totalContainers++;
-    }
-                                                            // DESTRUCTOR //
-    ~ItemContainer() {
-        totalContainers--;
-    }
-                                                            // METODE PUBLICE //
-    void addItem(const T& item) {
-        items.push_back(item);
-    }
-    bool removeItem(const T& item) {
-        auto it = std::find(items.begin(), items.end(), item);
-        if (it != items.end()) {
-            items.erase(it);
-            return true;
-        }
-        return false;
-    }
-    [[nodiscard]] size_t getItemCount() const { return items.size(); }
-    static int getTotalContainers() { return totalContainers; }
 
-    void display() const {
-        std::cout << containerName << " contains " << items.size() << " items\n";
-        for (const auto& item : items) {
-            std::cout<<" - " << item << "\n";
-        }
-    }
-
-    // Algoritm STL cu lambda
-    template<typename P>
-    int countIf(P p) const {
-        return std::count_if(items.begin(), items.end(), p);
-    }
-
-    // Pentru for loopuri bazate pe range
-    auto begin() { return items.begin(); }
-    auto end() { return items.end(); }
-    auto begin() const { return items.begin(); }
-    auto end() const { return items.end(); }
-};
-
-template<typename T>
-int ItemContainer<T>::totalContainers = 0;
-                                                            /// !!!! CLASA ITEM !!!! ///
-class Item {
-private:
-    std::string name;
-    int value;
-public:
-                                                            // CONSTRUCTOR //
-    explicit Item(std::string n = "", int v = 0)
-        : name(std::move(n)), value(v) {}
-                                                            // OPERATORI //
-    //pentru std::find ne trebuie ==
-    bool operator==(const Item& other) const {
-        return name == other.name && value == other.value;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const Item& item) {
-        os << item.name << " (Value: " << item.value << ")";
-        return os;
-    }
-                                                            // GETTERI //
-    [[nodiscard]] int getValue() const { return value; }
-    [[nodiscard]] const std::string& getName() const { return name; }
-};
                                                             /// !!! IERARHIE DE EXCEPTII !!! ///
 class Exception : public std::exception {
 protected:
@@ -843,6 +831,34 @@ private:
 };
 Shop* Shop::instance = nullptr;
                                                             /// FACTORY - ENEMYFACTORY ///
+class EnemyFactory {
+public:
+    static std::unique_ptr<Enemy> createEnemy(
+        Enemy::EnemyType type,
+        const std::string& name,
+        int level,
+        Enemy::Difficulty diff = Enemy::Difficulty::MEDIUM) {
+        switch (type) {
+            case Enemy::EnemyType::GOBLIN: return std::make_unique<Enemy>(name,type,diff,level);
+            case Enemy::EnemyType::SKELETON: return std::make_unique<Enemy>(name,type,diff,level);
+            case Enemy::EnemyType::ORC: return std::make_unique<Enemy>(name,type,diff,level);
+            case Enemy::EnemyType::SLIME: return std::make_unique<Enemy>(name,type,diff,level);
+            default: throw Exception("Unknown enemy type!");
+        }
+    }
+    static std::unique_ptr<Boss> createBoss(
+        const std::string&name,
+        const std::string& title = "Boss") {
+        return std::make_unique<Boss>(
+            name,
+            Enemy::EnemyType::ORC, //bossi vor fi orci
+            Enemy::Difficulty::BOSS,
+            15,
+            title);
+    }
+};
+                                                            /// !!!!! GAME MANAGER (GAME LOOP) !!!!! ///
+class GameManager {};
 
 int main() {
 };
