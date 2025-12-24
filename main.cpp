@@ -187,19 +187,23 @@ protected:
     int experience;
     int experienceToNext;
     std::vector<std::string> inventory;
+    int heroicStrikeCooldown;
+    int shieldBashCooldown;
 public:
                                                             // CONSTRUCTORI (apeland clasa de baza) //
     //Constructor default
     explicit Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
-          gold(50), experience(0), experienceToNext(100) {
+          gold(50), experience(0), experienceToNext(100),
+          heroicStrikeCooldown(0), shieldBashCooldown(0) {
         inventory.emplace_back("Basic Sword");
         inventory.emplace_back("Leather Rags");
     }
     //Constructor supraincarcat
     Player(const std::string &name, int level)
         : Character(name, level, 80+level*20, 12+level*3, 6+level*2, 12+level),
-          gold(level*25), experience(0), experienceToNext(level*100) {
+          gold(level*25), experience(0), experienceToNext(level*100),
+          heroicStrikeCooldown(0), shieldBashCooldown(0) {
         inventory.emplace_back("Basic Sword");
         inventory.emplace_back("Leather Rags");
     }
@@ -214,6 +218,7 @@ public:
             this->experience = other.experience;
             this->experienceToNext = other.experienceToNext;
             this->inventory = other.inventory;
+            // cooldowns and initial usage will always be the same
         }
         return *this;
     }
@@ -223,16 +228,40 @@ public:
     }
                                                             // METODE VIRTUALE SUPRASCRISE //
     void attack(Character &target) override {
-        std::cout << "Player " << getName() << " attacks " << target.getName() << "!\n";
-        Character::attack(target); // apelarea implementarii de baza
-
+        int damage=calculateDamage(target);
+        //aici aplicam abilitatile
+        //tocmai a fost folosit heroic strike? -> cooldown=3, la fel pt shield bash
+        if (heroicStrikeCooldown == 3) {
+            damage*=2;
+            std::cout << "HEROIC STRIKE activated! ";
+        }
+        if (shieldBashCooldown == 4) {
+            damage*=1.5;
+            target.setSpeed(target.getSpeed()-2);
+            std::cout << "SHIELD BASH activated!\n";
+        }
+        std::cout << "Player " << getName() << " attacks " << target.getName() << " for " << damage << " damage!\n";
+        target.takeDamage(damage);
         //specific pentru player: obtinerea experientei
         gainExperience(25);
     }
 
     void specialAbility() override {
-        std::cout << getName() << " uses special ability! Double damage next attack!\n";
-        attackPower*=2;
+        std::cout << getName() << "\nChoose special ability:\n";
+        std::cout << "1. Heroic Strike (2x damage, 3 turn cooldown)\n";
+        std::cout << "2. Shield Bash (1.5x damage + enemy SPD lowers by 2, 4 turn cooldown)\n";
+        std::cout << "3. Second Wind (heal, x2 uses per battle)\n";
+        int choice;
+        std::cin >> choice;
+        switch (choice) {
+            case 1: heroicStrike();
+            case 2: shieldBash();
+            case 3: secondWind();
+            default: std::cout<<"Invalid choice!\n";
+        }
+        if (heroicStrikeCooldown > 0) heroicStrikeCooldown--;
+        if (shieldBashCooldown > 0) shieldBashCooldown--;
+
     }
                                                             // METODE SPECIFICE PLAYER //
     void gainExperience(int xp) {
@@ -283,8 +312,40 @@ public:
         }
         std::cout << "Gold: " << gold << "\n";
     }
+                                                           // ABILITATI //
+private:
+    bool heroicStrike() {
+        if (heroicStrikeCooldown > 0) {
+            std::cout<<"Heroic Strike is on cooldown for " << heroicStrikeCooldown << "more turns!\n";
+            return false;
+        }
+        heroicStrikeCooldown=3;
+        return true;
+    }
+    bool shieldBash() {
+        if (shieldBashCooldown > 0) {
+            std::cout<<"Shield Bash is on cooldown for " << shieldBashCooldown << "more turns!\n";
+            return false;
+        }
+        shieldBashCooldown=4;
+        return true;
+    }
+    void secondWind() {
+        static int usesRemaining = 2;
+        if (usesRemaining <= 0) {
+            std::cout << "You're too exhausted to use Second Wind again!\n";
+            return;
+        }
+        std::cout<<name<<" uses SECOND WIND!\n";
+        int healAmount = maxHealth*0.3;
+        health+=healAmount;
+        if (health > maxHealth) health = maxHealth;
+        std::cout<<"Healed for " << healAmount << " HP! (Now: " << health << "/" << maxHealth << ")\n";
+        usesRemaining--;
+    }
 
                                                             // GETTERI //
+public:
     [[nodiscard]] int getGold() const { return gold; }
     [[nodiscard]] int getExp() const { return experience; }
     void setGold(int setgold) { gold = setgold; }
@@ -292,7 +353,7 @@ public:
 
                                                             // ALTE METODE //
     //Metoda pentru demonstrarea downcastingului
-    void buyFromShop (const std::string& item, int cost) {
+    void buyFromShop (const std::string& item, int cost) { // asta cred ca o sa o scot, eventual?
         if (spendGold(cost)) {
             addItem(item);
             std::cout << "Bought: " << item << "\n";
@@ -304,17 +365,23 @@ public:
 class Enemy : public Character {
 public:
     enum class EnemyType {GOBLIN, SKELETON, ORC, SLIME}; // Vom avea mai multe feluri de inamici
+    enum class Difficulty {EASY, MEDIUM, HARD, BOSS}; // Pentru a calcula dinamic atributele inamicului si rewardul
 protected:
     EnemyType type;
+    Difficulty difficulty;
     int baseReward;
     std::string description;
+    bool abilityUsed;
 public:
                                                             // CONSTRUCTORI //
     //Constructor default/supraincarcat
-    Enemy(const std::string& name, EnemyType type, int level)
-        : Character(name, level, 50 + level * 15, 8 + level * 2,
-                    3 + level, 8 + level),  // Call base constructor
-          type(type), baseReward(level * 10) {
+    Enemy(const std::string& name, EnemyType type, Difficulty diff, int level)
+        : Character(name, level,
+                      calculateHealth(type,diff,level),
+                      calculateAttack(type,diff,level),
+               calculateDefense(type,diff,level),
+                calculateSpeed(type,diff,level)),
+          type(type), difficulty(diff), baseReward(calculateReward(type,diff,level)), abilityUsed(false) {
         setDescription();
     }
 
@@ -352,34 +419,112 @@ public:
     }
 
     void specialAbility() override {
+        if (abilityUsed) {
+            std::cout << name <<"'s special ability is on cooldown!\n";
+            return;
+        }
         std::cout << getName() << " used ";
         switch(type) {
             case EnemyType::GOBLIN:
-                std::cout << "TRICK! Player defense lowered!\n"; // implementare in main
+                goblinSpecial();
                 break;
             case EnemyType::SKELETON:
-                std::cout << "FORTIFY! Enemy defense heightened!\n";
-                defense+=5;
+                skeletonSpecial();
                 break;
             case EnemyType::ORC:
-                std::cout << "RAGE! Increased attack!\n";
-                attackPower+=10;
+                orcSpecial();
                 break;
             case EnemyType::SLIME:
-                std::cout << "ACID! Poison damage over time!\n"; // implementare in main
+                slimeSpecial();
                 break;
         }
+        abilityUsed = true;
     }
-                                                            // METODE SPECIFICE INAMICULUI //
-    [[nodiscard]] int calculateReward() const {
-        int reward = baseReward;
-        if (type == EnemyType::ORC) reward*=2; // dublu gold de la orci
-        if (type == EnemyType::SLIME) reward/=2; // jumate gold de la slime
-        return reward;
+                                                            // METODE HELPER //
+    //Calcularea atributelor
+    static int calculateHealth (EnemyType type, Difficulty diff, int level) {
+        int base = 50+level*10;
+        switch (type) {
+            case EnemyType::GOBLIN: base = 40+level*8; break;
+            case EnemyType::SKELETON: base = 60+level*12; break;
+            case EnemyType::ORC: base = 80+level*15; break;
+            case EnemyType::SLIME: base = 100+level*5; break;
+        }
+        // Difficulty multiplier
+        switch (diff) {
+            case Difficulty::EASY: return base;
+            case Difficulty::MEDIUM: return base*1.5;
+            case Difficulty::HARD: return base*2;
+            case Difficulty::BOSS: return base*3;
+        }
+        return base;
     }
-
-    [[nodiscard]] bool isBoss() const {
-        return getLevel()>=10; // Inamici peste level 10 sunt considerati bossi
+    static int calculateAttack (EnemyType type, Difficulty diff, int level) {
+        int base = 5+level*2;
+        switch (type) {
+            case EnemyType::GOBLIN: base = 3+level; break;
+            case EnemyType::SKELETON: base = 6+level*2; break;
+            case EnemyType::ORC: base = 8+level*3; break;
+            case EnemyType::SLIME: base = 2+level; break;
+        }
+        // Difficulty multiplier
+        switch (diff) {
+            case Difficulty::EASY: return base;
+            case Difficulty::MEDIUM: return base*1.3;
+            case Difficulty::HARD: return base*1.6;
+            case Difficulty::BOSS: return base*2;
+        }
+        return base;
+    }
+    static int calculateDefense (EnemyType type, Difficulty diff, int level) {
+        int base = 3+level*2;
+        switch (type) {
+            case EnemyType::GOBLIN: base = 3+level*2; break;
+            case EnemyType::SKELETON: base = 5+level*3; break;
+            case EnemyType::ORC: base = 2+level; break;
+            case EnemyType::SLIME: base = 10+level*3; break;
+        }
+        // Difficulty multiplier
+        switch (diff) {
+            case Difficulty::EASY: return base;
+            case Difficulty::MEDIUM: return base*1.3;
+            case Difficulty::HARD: return base*1.6;
+            case Difficulty::BOSS: return base*2;
+        }
+        return base;
+    }
+    static int calculateSpeed (EnemyType type, Difficulty diff, int level) {
+        int base = 7+level*2;
+        switch (type) {
+            case EnemyType::GOBLIN: base = 5+level*2; break;
+            case EnemyType::SKELETON: base = 2+level*2; break;
+            case EnemyType::ORC: base = 3+level; break;
+            case EnemyType::SLIME: base = 2+level; break;
+        }
+        // Difficulty multiplier
+        switch (diff) {
+            case Difficulty::EASY: return base;
+            case Difficulty::MEDIUM: return base*1.2;
+            case Difficulty::HARD: return base*1.4;
+            case Difficulty::BOSS: return base*1.6;
+        }
+        return base;
+    }
+    static int calculateReward(EnemyType type, Difficulty diff, int level) {
+        int base = level * 10;
+        switch (type) {
+            case EnemyType::GOBLIN: base = level*5; break;
+            case EnemyType::SKELETON: base = level*12; break;
+            case EnemyType::ORC: base = level*15; break;
+            case EnemyType::SLIME: base = level*8; break;
+        }
+        switch (diff) {
+            case Difficulty::EASY: return base;
+            case Difficulty::MEDIUM: return base*2;
+            case Difficulty::HARD: return base*3;
+            case Difficulty::BOSS: return base*5;
+        }
+        return base;
     }
                                                             // GETTERI SI SETTERI //
     [[nodiscard]] EnemyType getType() const { return type; }
@@ -399,6 +544,34 @@ public:
                 description = "Gelatinous fiend";
                 break;
         }
+        // si acum adaugam si dificultatea
+        switch (difficulty) {
+            case Difficulty::EASY: description+= " (Easy)"; break;
+            case Difficulty::MEDIUM: description+= " (Medium)"; break;
+            case Difficulty::HARD: description+= " (Hard)"; break;
+            case Difficulty::BOSS: description+= " (BOSS)"; break;
+        }
+    }
+                                                            // ABILITATI INDIVIDUALE //
+private:
+    void goblinSpecial() {
+        std::cout << "TRICK! Goblin increases SPD by 5!\n";
+        speed+=5;
+    }
+    void skeletonSpecial() {
+        std::cout << "FORTIFY! Skeleton increases DEF by 10!\n";
+        defense+=10;
+    }
+    void orcSpecial() {
+        std::cout << "RAGE! Orc increases ATK by 15, but loses 5 DEF!\n";
+        attackPower+=15;
+        defense-=5;
+    }
+    void slimeSpecial() {
+        std::cout << "BULWARK FORM! Slime increases DEF by 15, but loses 5 ATK and 5 SPD!\n";
+        defense+=15;
+        attackPower-=5;
+        speed-=5;
     }
 
 };
@@ -408,18 +581,19 @@ protected:
     std::string title;
     bool hasSpecialPhase; // la un anumit punct, bossul intra in phase 2 pentru a il distinge mai bine de un inamic normal
     int specialPhaseThreshold;
+    int turnCounter; // abilitati phase-specific
 public:
                                                             // CONSTRUCTORI //
-    Boss(const std::string& name, Enemy::EnemyType type, int level,
+    Boss(const std::string& name, EnemyType type, Difficulty diff, int level,
          std::string title)
-        : Enemy(name, type, level),  // apeleaza constructorul 'Enemy'
+        : Enemy(name, type, diff, level),  // apeleaza constructorul 'Enemy'
           title(std::move(title)), hasSpecialPhase(false),
-          specialPhaseThreshold(getMaxHealth() / 2) {
+          specialPhaseThreshold(getMaxHealth() / 2), turnCounter(0) {
         // Bossi sunt mai puternici
         maxHealth*=2;
         health=maxHealth;
-        attackPower+=10;
-        defense+=5;
+        attackPower+=20;
+        defense+=10;
     }
 
     // Constructor copy
@@ -443,22 +617,32 @@ public:
                                                             // METODE SUPRASCRISE //
     void takeDamage(int damage) override {
         Character::takeDamage(damage);
-
+        turnCounter++;
         //vf daca suntem in faza speciala
         if (!hasSpecialPhase && getHealth() <= specialPhaseThreshold) {
             enterSpecialPhase();
+        }
+        //la fiecare 3 ture, bossul devine mai puternic
+        if (turnCounter % 3 == 0) {
+            std::cout << title << " " << name << " grows more powerful!\n";
+            attackPower += 5;
         }
     }
 
     void specialAbility() override {
         if (hasSpecialPhase) {
-            std::cout << title << " " << getName()
-                      << " used ULTIMATE ATTACK! Devastating damage!\n";
+            enragedSpecial();
         } else {
             Enemy::specialAbility(); // apelam abilitatea speciala normala
         }
     }
                                                             // METODE SPECIFICE BOSSULUI //
+private:
+    void enragedSpecial() {
+        std::cout<< "\n!!!" << title << " " << name << " ULTIMATE ATTACK !!!\n";
+        attackPower*=4;
+    }
+
     void enterSpecialPhase() {
         hasSpecialPhase = true;
         std::cout << "\n!!! PHASE 2 !!!\n";
@@ -466,6 +650,7 @@ public:
         attackPower*=2;
         speed*=2;
     }
+public:
                                                             // GETTERI //
     [[nodiscard]] const std::string& getTitle() const { return title; }
     [[nodiscard]] bool isInSpecialPhase() const { return hasSpecialPhase; }
@@ -636,7 +821,7 @@ public:
         return false;
     }
 private:
-    void applyItemEffect(Player& player, const std::string& itemName) {
+    static void applyItemEffect(Player& player, const std::string& itemName) {
         if (itemName == "Health Potion") {
             player.setHealth(player.getHealth()+50);
             std::cout<<"Restored 50 HP!\n";
