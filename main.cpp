@@ -319,7 +319,7 @@ public:
             std::cout << "HEROIC STRIKE activated! ";
         }
         if (shieldBashCooldown == 4) {
-            damage*=1.5;
+            damage*=static_cast<int>(1.5);
             target.setSpeed(target.getSpeed()-2);
             std::cout << "SHIELD BASH activated!\n";
         }
@@ -417,7 +417,7 @@ private:
             return;
         }
         std::cout<<name<<" uses SECOND WIND!\n";
-        int healAmount = maxHealth*0.3;
+        int healAmount = maxHealth*static_cast<int>(0.3);
         health+=healAmount;
         if (health > maxHealth) health = maxHealth;
         std::cout<<"Healed for " << healAmount << " HP! (Now: " << health << "/" << maxHealth << ")\n";
@@ -523,7 +523,7 @@ public:
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*1.5;
+            case Difficulty::MEDIUM: return base*static_cast<int>(1.5);
             case Difficulty::HARD: return base*2;
             case Difficulty::BOSS: return base*3;
         }
@@ -540,8 +540,8 @@ public:
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*1.3;
-            case Difficulty::HARD: return base*1.6;
+            case Difficulty::MEDIUM: return base*static_cast<int>(1.3);
+            case Difficulty::HARD: return base*static_cast<int>(1.6);
             case Difficulty::BOSS: return base*2;
         }
         return base;
@@ -557,8 +557,8 @@ public:
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*1.3;
-            case Difficulty::HARD: return base*1.6;
+            case Difficulty::MEDIUM: return base*static_cast<int>(1.3);
+            case Difficulty::HARD: return base*static_cast<int>(1.6);
             case Difficulty::BOSS: return base*2;
         }
         return base;
@@ -574,9 +574,9 @@ public:
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*1.2;
-            case Difficulty::HARD: return base*1.4;
-            case Difficulty::BOSS: return base*1.6;
+            case Difficulty::MEDIUM: return base*static_cast<int>(1.2);
+            case Difficulty::HARD: return base*static_cast<int>(1.4);
+            case Difficulty::BOSS: return base*static_cast<int>(1.6);
         }
         return base;
     }
@@ -838,13 +838,7 @@ public:
         const std::string& name,
         int level,
         Enemy::Difficulty diff = Enemy::Difficulty::MEDIUM) {
-        switch (type) {
-            case Enemy::EnemyType::GOBLIN: return std::make_unique<Enemy>(name,type,diff,level);
-            case Enemy::EnemyType::SKELETON: return std::make_unique<Enemy>(name,type,diff,level);
-            case Enemy::EnemyType::ORC: return std::make_unique<Enemy>(name,type,diff,level);
-            case Enemy::EnemyType::SLIME: return std::make_unique<Enemy>(name,type,diff,level);
-            default: throw Exception("Unknown enemy type!");
-        }
+        return std::make_unique<Enemy>(name,type,diff,level);
     }
     static std::unique_ptr<Boss> createBoss(
         const std::string&name,
