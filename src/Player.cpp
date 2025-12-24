@@ -50,9 +50,9 @@
         int choice;
         std::cin >> choice;
         switch (choice) {
-            case 1: heroicStrike();
-            case 2: shieldBash();
-            case 3: secondWind();
+            case 1: heroicStrike(); break;
+            case 2: shieldBash(); break;
+            case 3: secondWind(); break;
             default: std::cout<<"Invalid choice!\n";
         }
         if (heroicStrikeCooldown > 0) heroicStrikeCooldown--;
