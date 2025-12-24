@@ -1,11 +1,11 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <memory>
 #include <utility>
 #include <vector>
-#include <typeinfo>
 
-                                                    /// !!!!! CLASA DE BAZA 'CHARACTER' !!!!! ///
+                                                            /// !!!!! CLASA DE BAZA 'CHARACTER' !!!!! ///
 class Character {
 protected:
     std::string name;
@@ -32,7 +32,9 @@ public:
     }
     // Constructor supraincarcat
     Character(const std::string& name, int level)
-        : Character(name, level, 50+level*10, 5+level*2, 2+level, 5+level){}
+        : Character(name, level, 50+level*10, 5+level*2, 2+level, 5+level) {
+        totalCharacters++;
+    }
     // Constructor copy
     Character(const Character &other)
         : name(other.name),
@@ -77,7 +79,7 @@ public:
     //metoda pentru atac
     virtual void attack(Character& target) {
         int damage = calculateDamage(target);
-        std::cout << name << " ataca " << target.getName() << " pentru " << damage << " damage!\n ";
+        std::cout << name << " attacks " << target.getName() << " for " << damage << " damage!\n ";
         target.takeDamage(damage);
     }
     //metoda pentru a lua damage
@@ -92,7 +94,7 @@ public:
 
                                                             // DESTRUCTORI //
     virtual ~Character() { //destructor virtual
-        std::cout<< name << " distrus\n";
+        std::cout<< name << " destroyed\n";
     }
                                                             // GETTERS/SETTERS //
     [[nodiscard]] const std::string& getName() const { return name; }
@@ -103,15 +105,10 @@ public:
     [[nodiscard]] int getDefense() const { return defense; }
     [[nodiscard]] int getSpeed() const { return speed; }
     void setName(const std::string &setname) { this->name = setname; }
-    void setLevel(int setlevel) { this->level = setlevel; }
     void setHealth(int sethealth) {
         this->health = (sethealth>maxHealth) ? maxHealth : sethealth;
-        if (health < 0) health=0;
+        if (health < 0) this->health=0;
     }
-    void setMaxHealth (int setmaxhealth) { this->maxHealth = setmaxhealth; }
-    void setAttackPower(int setattackpower) { this->attackPower = setattackpower; }
-    void setDefense(int setdefense) { this->defense = setdefense; }
-    void setSpeed(int setspeed) { this->speed = setspeed; }
                                                             // ALTE METODE //
     void displayStatus() const { //vor fi afisate in timpul unei lupte
         std::cout << name << " [LVL " << level << "] "
@@ -160,6 +157,89 @@ bool operator<(const Character& c1, const Character& c2) {
 bool operator==(const Character& c1, const Character& c2) {
     return c1.getLevel() == c2.getLevel() && c1.getAttackPower() == c2.getAttackPower();
 }
+                                                            /// !!!!! CLASA TEMPLATE ITEMCONTAINER !!!!! ///
+template<typename T>
+class ItemContainer {
+private:
+    std::vector<T> items;
+    static int totalContainers;
+    std::string containerName;
+public:
+                                                            // CONSTRUCTORI //
+    explicit ItemContainer(std::string name = "Container")
+        : containerName(std::move(name)) {
+        totalContainers++;
+    }
+    //Constructor copy
+    ItemContainer(const ItemContainer& other)
+        : items(other.items),
+        containerName(other.containerName) {
+        totalContainers++;
+    }
+                                                            // DESTRUCTOR //
+    ~ItemContainer() {
+        totalContainers--;
+    }
+                                                            // METODE PUBLICE //
+    void addItem(const T& item) {
+        items.push_back(item);
+    }
+    bool removeItem(const T& item) {
+        auto it = std::find(items.begin(), items.end(), item);
+        if (it != items.end()) {
+            items.erase(it);
+            return true;
+        }
+        return false;
+    }
+    [[nodiscard]] size_t getItemCount() const { return items.size(); }
+    static int getTotalContainers() { return totalContainers; }
+
+    void display() const {
+        std::cout << containerName << " contains " << items.size() << " items\n";
+        for (const auto& item : items) {
+            std::cout<<" - " << item << "\n";
+        }
+    }
+
+    // Algoritm STL cu lambda
+    template<typename P>
+    int countIf(P p) const {
+        return std::count_if(items.begin(), items.end(), p);
+    }
+
+    // Pentru for loopuri bazate pe range
+    auto begin() { return items.begin(); }
+    auto end() { return items.end(); }
+    auto begin() const { return items.begin(); }
+    auto end() const { return items.end(); }
+};
+
+template<typename T>
+int ItemContainer<T>::totalContainers = 0;
+                                                            /// !!!! CLASA ITEM !!!! ///
+class Item {
+private:
+    std::string name;
+    int value;
+public:
+                                                            // CONSTRUCTOR //
+    explicit Item(std::string n = "", int v = 0)
+        : name(std::move(n)), value(v) {}
+                                                            // OPERATORI //
+    //pentru std::find ne trebuie ==
+    bool operator==(const Item& other) const {
+        return name == other.name && value == other.value;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Item& item) {
+        os << item.name << " (Value: " << item.value << ")";
+        return os;
+    }
+                                                            // GETTERI //
+    [[nodiscard]] int getValue() const { return value; }
+    [[nodiscard]] const std::string& getName() const { return name; }
+};
                                                             // !!!! CLASE DERIVATE !!!! //
                                                             /// CLASA 'PLAYER' - DERIVATA LUI 'CHARACTER' ///
 class Player : public Character {
@@ -177,7 +257,7 @@ public:
         inventory.emplace_back("Basic Sword");
         inventory.emplace_back("Leather Rags");
     }
-    //Constructor parametrizat
+    //Constructor supraincarcat
     Player(const std::string &name, int level)
         : Character(name, level, 80+level*20, 12+level*3, 6+level*2, 12+level),
           gold(level*25), experience(0), experienceToNext(level*100) {
@@ -204,7 +284,7 @@ public:
     }
                                                             // METODE VIRTUALE SUPRASCRISE //
     void attack(Character &target) override {
-        std::cout << "Player " << getName() << " ataca " << target.getName() << "!\n";
+        std::cout << "Player " << getName() << " attacks " << target.getName() << "!\n";
         Character::attack(target); // apelarea implementarii de baza
 
         //specific pentru player: obtinerea experientei
@@ -212,13 +292,13 @@ public:
     }
 
     void specialAbility() override {
-        std::cout << getName() << " foloseste abilitatea speciala! Dublu damage pentru urmatorul atac!\n";
-        setAttackPower(getAttackPower()*2);
+        std::cout << getName() << " uses special ability! Double damage next attack!\n";
+        attackPower*=2;
     }
                                                             // METODE SPECIFICE PLAYER //
     void gainExperience(int xp) {
         experience += xp;
-        std::cout << "Obtinut " << xp << " experienta. Total: "
+        std::cout << "Obtained " << xp << " experience. Total: "
                   << experience << "/" << experienceToNext << std::endl;
         while (experience>=experienceToNext) {
             experience-=experienceToNext;
@@ -228,41 +308,41 @@ public:
     }
 
     void levelUp() {
-        setLevel(getLevel()+1);
-        setMaxHealth(getMaxHealth()+30);
-        setHealth(getMaxHealth()); // heal la levelup
-        setAttackPower(getAttackPower()+8);
-        setDefense(getDefense()+4);
-        setSpeed(getSpeed()+2);
-        std::cout << getName() << " a facut level up la " << getLevel() << "!\n";
+        level+=1;
+        maxHealth+=30;
+        health=maxHealth; // heal la levelup
+        attackPower+=8;
+        defense+=4;
+        speed+=2;
+        std::cout << getName() << " leveled up to level " << getLevel() << "!\n";
     }
 
     void addGold(int amount) {
         gold += amount;
-        std::cout << "Obtinut" << amount << " aur. Total: " << gold << "\n";
+        std::cout << "Obtained" << amount << " gold. Total: " << gold << "\n";
     }
 
     bool spendGold(int amount) {
         if (gold >= amount) {
             gold -= amount;
-            std::cout << "Platit " << amount << " aur. Total ramas: " << gold << "\n";
+            std::cout << "Spent " << amount << " gold. Total remaining: " << gold << "\n";
             return true;
         }
-        std::cout << "Prea putin aur! Ai nevoie de " << amount << ", dar ai " << gold << "\n";
+        std::cout << "Not enough gold! You need " << amount << ", but you have " << gold << "\n";
         return false;
     }
 
     void addItem(const std::string& item) {
         inventory.push_back(item);
-        std::cout << "Adaugat " << item << " la inventar\n";
+        std::cout << "Added " << item << " to inventory\n";
     }
 
     void showInventory() const {
-        std::cout << "Inventarul lui " << getName() << " (" << inventory.size() << " iteme):\n";
+        std::cout << getName() << "'s Inventory" << " (" << inventory.size() << " items):\n";
         for (const auto& item : inventory) {
             std::cout << " - " << item << std::endl;
         }
-        std::cout << "Aur: " << gold << "\n";
+        std::cout << "Gold: " << gold << "\n";
     }
 
                                                             // GETTERI //
@@ -276,7 +356,7 @@ public:
     void buyFromShop (const std::string& item, int cost) {
         if (spendGold(cost)) {
             addItem(item);
-            std::cout << "Cumparat: " << item << "\n";
+            std::cout << "Bought: " << item << "\n";
         }
     }
 
@@ -291,6 +371,7 @@ protected:
     std::string description;
 public:
                                                             // CONSTRUCTORI //
+    //Constructor default/supraincarcat
     Enemy(const std::string& name, EnemyType type, int level)
         : Character(name, level, 50 + level * 15, 8 + level * 2,
                     3 + level, 8 + level),  // Call base constructor
@@ -326,27 +407,27 @@ public:
             case EnemyType::ORC: std::cout << "Orc"; break;
             case EnemyType::SLIME: std::cout << "Slime"; break;
         }
-        std::cout << ") ataca !\n";
+        std::cout << ") attacks !\n";
 
         Character::attack(target);
     }
 
     void specialAbility() override {
-        std::cout << getName() << " a folosit ";
+        std::cout << getName() << " used ";
         switch(type) {
             case EnemyType::GOBLIN:
-                std::cout << "TRICK! Defense scazut pentru jucator!\n";
+                std::cout << "TRICK! Player defense lowered!\n"; // implementare in main
                 break;
             case EnemyType::SKELETON:
-                std::cout << "FORTIFY! Defense ridicat pentru inamic!\n";
-                setDefense(getDefense()+5);
+                std::cout << "FORTIFY! Enemy defense heightened!\n";
+                defense+=5;
                 break;
             case EnemyType::ORC:
-                std::cout << "RAGE! Atac ridicat pentru inamic!\n";
-                setAttackPower(getAttackPower()+10);
+                std::cout << "RAGE! Increased attack!\n";
+                attackPower+=10;
                 break;
             case EnemyType::SLIME:
-                std::cout << "ACID! Otrava peste timp!\n";
+                std::cout << "ACID! Poison damage over time!\n"; // implementare in main
                 break;
         }
     }
@@ -367,16 +448,16 @@ public:
     void setDescription() {
         switch (type) {
             case EnemyType::GOBLIN:
-                description = "Creatura mica si sireata";
+                description = "Cunning and small creature";
                 break;
             case EnemyType::SKELETON:
-                description = "Soldat nemuritor";
+                description = "Undead soldier";
                 break;
             case EnemyType::ORC:
-                description = "Barbar si puternic";
+                description = "Barbaric and powerful humanoid";
                 break;
             case EnemyType::SLIME:
-                description = "Monstru gelatinos";
+                description = "Gelatinous fiend";
                 break;
         }
     }
@@ -396,10 +477,10 @@ public:
           title(std::move(title)), hasSpecialPhase(false),
           specialPhaseThreshold(getMaxHealth() / 2) {
         // Bossi sunt mai puternici
-        setMaxHealth(getMaxHealth()*2);
-        setHealth(getMaxHealth());
-        setAttackPower(getAttackPower()+10);
-        setDefense(getDefense()+5);
+        maxHealth*=2;
+        health=maxHealth;
+        attackPower+=10;
+        defense+=5;
     }
 
     // Constructor copy
@@ -418,7 +499,7 @@ public:
 
                                                             // DESTRUCTOR //
     ~Boss() override {
-        std::cout << "Bossul " << getName() << " distrus\n";
+        std::cout << "Boss " << getName() << " destroyed\n";
     }
                                                             // METODE SUPRASCRISE //
     void takeDamage(int damage) override {
@@ -433,7 +514,7 @@ public:
     void specialAbility() override {
         if (hasSpecialPhase) {
             std::cout << title << " " << getName()
-                      << " foloseste ATAC SUPREM! Damage devastator!\n";
+                      << " used ULTIMATE ATTACK! Devastating damage!\n";
         } else {
             Enemy::specialAbility(); // apelam abilitatea speciala normala
         }
@@ -442,9 +523,9 @@ public:
     void enterSpecialPhase() {
         hasSpecialPhase = true;
         std::cout << "\n!!! PHASE 2 !!!\n";
-        std::cout << title << " " << getName() << " este infuriat!\n";
-        setAttackPower(getAttackPower()*2);
-        setSpeed(getSpeed()*2);
+        std::cout << title << " " << getName() << " is enraged!\n";
+        attackPower*=2;
+        speed*=2;
     }
                                                             // GETTERI //
     [[nodiscard]] const std::string& getTitle() const { return title; }
@@ -454,75 +535,10 @@ public:
         displayStatus();
         std::cout<< " - " << title << "\n";
         if (hasSpecialPhase) {
-            std::cout<<" (INFURIAT)\n";
+            std::cout<<" (ENRAGED)\n";
         }
     }
 };
 
 int main() {
-    //Demonstrare upcasting, downcasting
-
-    //UPCASTING
-    Player player("Hero", 5);
-    Character* characterPtr = &player; //Upcast
-    std::cout << "1. Upcast Player la Character*\n";
-    characterPtr->displayStatus();
-    std::cout<<"\n";
-
-    //Folosirea metodelor virtuale prin pointer de baza
-    Enemy goblin("Gubby", Enemy::EnemyType::GOBLIN, 3);
-    Character* enemyPtr = &goblin; //Upcast
-
-    std::cout<< "2. Apelarea metodei virtuale prin pointer de baza:\n";
-    characterPtr->attack(goblin); // Apeleaza Player::attack()
-    enemyPtr->attack(player); // Apeleaze Enemy::attack()
-
-    //DOWNCASTING
-    std::cout<< "\n3. Downcast cu dynamic_cast (RTTI):\n";
-
-    std::vector<Character*> characters;
-    characters.push_back(&player);
-    characters.push_back(&goblin);
-
-    Boss orc("Ziggurat", Enemy::EnemyType::ORC, 15, "cel Flamand");
-    characters.push_back(&orc);
-
-    for (Character* ptr : characters) {
-        // Incercam downcast la Player
-        if (auto* playerPtr = dynamic_cast<Player*>(ptr)) {
-            std::cout << " - Gasit Player: " << playerPtr->getName()
-                      << " (Aur: " << playerPtr->getGold() << ")\n";
-            playerPtr->showInventory();
-        }
-        // Incercam downcast la Enemy
-        else if (auto* enemy_Ptr = dynamic_cast<Enemy*>(ptr)) {
-            std::cout<< " - Gasit Enemy: " << enemy_Ptr->getName()
-                    << " (Reward: " << enemy_Ptr->calculateReward() << " gold)\n";
-        }
-        // Incercam downcast la Boss
-        else if (auto* bossPtr = dynamic_cast<Boss*>(ptr)) {
-            std::cout<< " Este un BOSS: " << bossPtr->getTitle() << "\n";
-        }
-    }
-
-    //Verificam tipul cu typeid
-    std::cout<<"\n4. Verificarea tipului cu typeid:\n";
-    std::cout<<"player type: " << typeid(player).name() << "\n";
-    std::cout<<"goblin type: " << typeid(goblin).name() << "\n";
-    std::cout<<"orc type: " << typeid(orc).name() << "\n";
-
-    //Demonstrarea polimorfismului in lupta
-    std::cout<< "\n5. Simulare de lupta\n";
-
-    //Facem o echipa mixta (asta e DOAR pentru demonstrare, nu vom avea niciodata inamici cu player)
-    std::vector<std::unique_ptr<Character>> party;
-    party.push_back(std::make_unique<Player>("Razboinic",8));
-    party.push_back(std::make_unique<Enemy>("Schelet",Enemy::EnemyType::SKELETON,6));
-
-    for (auto&member:party) {
-        member->specialAbility();
-    }
-    std::cout<<"\nNumarul total de personaje este: \n";
-    std::cout<<Character::getTotalCharacters()<<"\n";
-
 };
