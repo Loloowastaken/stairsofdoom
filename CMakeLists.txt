@@ -130,7 +130,22 @@ include(cmake/CopyHelper.cmake)
 ###############################################################################
 
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
-add_executable(${MAIN_EXECUTABLE_NAME} main.cpp ${SOURCES})
+add_executable(${MAIN_EXECUTABLE_NAME} main.cpp ${SOURCES}
+        include/Character.h
+        src/Character.cpp
+        include/ItemContainer.h
+        include/Player.h
+        src/Player.cpp
+        include/Enemy.h
+        src/Enemy.cpp
+        include/Boss.h
+        src/Boss.cpp
+        include/Exception.h
+        src/Exception.cpp
+        include/Shop.h
+        src/Shop.cpp
+        include/GameManager.h
+        src/GameManager.cpp)
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
