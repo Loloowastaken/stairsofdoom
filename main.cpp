@@ -202,6 +202,13 @@ public:
         containerName(other.containerName) {
         totalContainers++;
     }
+    ItemContainer& operator=(const ItemContainer& other) {
+        if (this != &other) {
+            containerName = other.containerName;
+            items = other.items;
+        }
+        return *this;
+    }
                                                             // DESTRUCTOR //
     ~ItemContainer() {
         totalContainers--;
