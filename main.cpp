@@ -185,11 +185,11 @@ class ItemContainer {
 private:
     std::vector<T> items;
     static int totalContainers;
-    std::string containerName;
+    std::string containerName = "Default Container";
 public:
                                                             // CONSTRUCTORI //
     ItemContainer()
-        : containerName("Unnamed Container") {
+    {
         totalContainers++;
     }
     explicit ItemContainer(std::string name)
@@ -237,8 +237,8 @@ public:
     // Pentru for loopuri bazate pe range
     auto begin() { return items.begin(); }
     auto end() { return items.end(); }
-    auto begin() const { return items.begin(); }
-    auto end() const { return items.end(); }
+    [[nodiscard]] auto begin() const { return items.begin(); }
+    [[nodiscard]] auto end() const { return items.end(); }
 };
 
 template<typename T>
