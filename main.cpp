@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <string>
 #include <memory>
 #include <utility>
@@ -126,6 +127,10 @@ public:
         this->health = (sethealth>maxHealth) ? maxHealth : sethealth;
         if (health < 0) this->health=0;
     }
+    void setMaxHealth (int setmaxhealth) { this->maxHealth = setmaxhealth; }
+    void setAttackPower(int setattackpower) { this->attackPower = setattackpower; }
+    void setDefense(int setdefense) { this->defense = setdefense; }
+    void setSpeed(int setspeed) { this->speed = setspeed; }
                                                             // ALTE METODE //
     void displayStatus() const { //vor fi afisate in timpul unei lupte
         std::cout << name << " [LVL " << level << "] "
@@ -174,116 +179,6 @@ bool operator<(const Character& c1, const Character& c2) {
 bool operator==(const Character& c1, const Character& c2) {
     return c1.getLevel() == c2.getLevel() && c1.getAttackPower() == c2.getAttackPower();
 }
-                                                            /// !!!!! CLASA TEMPLATE ITEMCONTAINER !!!!! ///
-template<typename T>
-class ItemContainer {
-private:
-    std::vector<T> items;
-    static int totalContainers;
-    std::string containerName;
-public:
-                                                            // CONSTRUCTORI //
-    explicit ItemContainer(std::string name = "Container")
-        : containerName(std::move(name)) {
-        totalContainers++;
-    }
-    //Constructor copy
-    ItemContainer(const ItemContainer& other)
-        : items(other.items),
-        containerName(other.containerName) {
-        totalContainers++;
-    }
-                                                            // DESTRUCTOR //
-    ~ItemContainer() {
-        totalContainers--;
-    }
-                                                            // METODE PUBLICE //
-    void addItem(const T& item) {
-        items.push_back(item);
-    }
-    bool removeItem(const T& item) {
-        auto it = std::find(items.begin(), items.end(), item);
-        if (it != items.end()) {
-            items.erase(it);
-            return true;
-        }
-        return false;
-    }
-    [[nodiscard]] size_t getItemCount() const { return items.size(); }
-    static int getTotalContainers() { return totalContainers; }
-
-    void display() const {
-        std::cout << containerName << " contains " << items.size() << " items\n";
-        for (const auto& item : items) {
-            std::cout<<" - " << item << "\n";
-        }
-    }
-
-    // Algoritm STL cu lambda
-    template<typename P>
-    int countIf(P p) const {
-        return std::count_if(items.begin(), items.end(), p);
-    }
-
-    // Pentru for loopuri bazate pe range
-    auto begin() { return items.begin(); }
-    auto end() { return items.end(); }
-    auto begin() const { return items.begin(); }
-    auto end() const { return items.end(); }
-};
-
-template<typename T>
-int ItemContainer<T>::totalContainers = 0;
-                                                            /// !!!! CLASA ITEM !!!! ///
-class Item {
-private:
-    std::string name;
-    int value;
-public:
-                                                            // CONSTRUCTOR //
-    explicit Item(std::string n = "", int v = 0)
-        : name(std::move(n)), value(v) {}
-                                                            // OPERATORI //
-    //pentru std::find ne trebuie ==
-    bool operator==(const Item& other) const {
-        return name == other.name && value == other.value;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const Item& item) {
-        os << item.name << " (Value: " << item.value << ")";
-        return os;
-    }
-                                                            // GETTERI //
-    [[nodiscard]] int getValue() const { return value; }
-    [[nodiscard]] const std::string& getName() const { return name; }
-};
-                                                            /// !!! IERARHIE DE EXCEPTII !!! ///
-class Exception : public std::exception {
-protected:
-    std::string message;
-public:
-    explicit Exception(std::string msg) : message(std::move(msg)) {}
-    ~Exception() override = default;
-    [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
-};
-
-class CombatException : public Exception {
-public:
-    explicit CombatException(std::string msg)
-        : Exception("Combat Error: " + std::move(msg)) {}
-};
-
-class InventoryException : public Exception {
-public:
-    explicit InventoryException(std::string msg)
-        : Exception("Inventory Error: " + std::move(msg)) {}
-};
-
-class PlayerDeathException : public CombatException {
-public:
-    PlayerDeathException()
-        : CombatException("Player has been defeated!") {}
-};
                                                             // !!!! CLASE DERIVATE !!!! //
                                                             /// CLASA 'PLAYER' - DERIVATA LUI 'CHARACTER' ///
 class Player : public Character {
@@ -583,6 +478,186 @@ public:
         }
     }
 };
+                                                            /// !!!!! CLASA TEMPLATE ITEMCONTAINER !!!!! ///
+template<typename T>
+class ItemContainer {
+private:
+    std::vector<T> items;
+    static int totalContainers;
+    std::string containerName;
+public:
+                                                            // CONSTRUCTORI //
+    explicit ItemContainer(std::string name = "Container")
+        : containerName(std::move(name)) {
+        totalContainers++;
+    }
+    //Constructor copy
+    ItemContainer(const ItemContainer& other)
+        : items(other.items),
+        containerName(other.containerName) {
+        totalContainers++;
+    }
+                                                            // DESTRUCTOR //
+    ~ItemContainer() {
+        totalContainers--;
+    }
+                                                            // METODE PUBLICE //
+    void addItem(const T& item) {
+        items.push_back(item);
+    }
+    bool removeItem(const T& item) {
+        auto it = std::find(items.begin(), items.end(), item);
+        if (it != items.end()) {
+            items.erase(it);
+            return true;
+        }
+        return false;
+    }
+    [[nodiscard]] size_t getItemCount() const { return items.size(); }
+    static int getTotalContainers() { return totalContainers; }
+
+    void display() const {
+        std::cout << containerName << " contains " << items.size() << " items\n";
+        for (const auto& item : items) {
+            std::cout<<" - " << item << "\n";
+        }
+    }
+
+    // Algoritm STL cu lambda
+    template<typename P>
+    int countIf(P p) const {
+        return std::count_if(items.begin(), items.end(), p);
+    }
+
+    // Pentru for loopuri bazate pe range
+    auto begin() { return items.begin(); }
+    auto end() { return items.end(); }
+    auto begin() const { return items.begin(); }
+    auto end() const { return items.end(); }
+};
+
+template<typename T>
+int ItemContainer<T>::totalContainers = 0;
+                                                            /// !!!! CLASA ITEM !!!! ///
+class Item {
+private:
+    std::string name;
+    int value;
+public:
+                                                            // CONSTRUCTOR //
+    explicit Item(std::string n = "", int v = 0)
+        : name(std::move(n)), value(v) {}
+                                                            // OPERATORI //
+    //pentru std::find ne trebuie ==
+    bool operator==(const Item& other) const {
+        return name == other.name && value == other.value;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Item& item) {
+        os << item.name << " (Value: " << item.value << ")";
+        return os;
+    }
+                                                            // GETTERI //
+    [[nodiscard]] int getValue() const { return value; }
+    [[nodiscard]] const std::string& getName() const { return name; }
+};
+                                                            /// !!! IERARHIE DE EXCEPTII !!! ///
+class Exception : public std::exception {
+protected:
+    std::string message;
+public:
+    explicit Exception(std::string msg) : message(std::move(msg)) {}
+    ~Exception() override = default;
+    [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
+};
+
+class CombatException : public Exception {
+public:
+    explicit CombatException(std::string msg)
+        : Exception("Combat Error: " + std::move(msg)) {}
+};
+
+class InventoryException : public Exception {
+public:
+    explicit InventoryException(std::string msg)
+        : Exception("Inventory Error: " + std::move(msg)) {}
+};
+
+class PlayerDeathException : public CombatException {
+public:
+    PlayerDeathException()
+        : CombatException("Player has been defeated!") {}
+};
+                                                            /// !!!!! DESIGN PATTERNS !!!!! ///
+                                                            /// SINGLETON - SHOP ///
+class Shop {
+private:
+    static Shop* instance;
+    std::map<std::string, int> items; // item name -> pret
+
+    //Constructor private pentru Singleton
+    Shop() {
+        //Initializam cateva iteme
+        items["Health Potion"] = 50;
+        items["Attack Boost"] = 100;
+        items["Defense Boost"] = 100;
+        items["Speed Boost"] = 75;
+    }
+public:
+    // copy constructor si atribuire delete
+    Shop(const Shop& other) = delete;
+    Shop& operator=(const Shop&) = delete;
+
+    // get singleton instance
+    static Shop& getInstance() {
+        if (instance == nullptr) {
+            instance = new Shop();
+        }
+        return *instance;
+    }
+    void displayItems() const {
+        std::cout<<"\n=== SHOP ===\n";
+        for (const auto& item : items) {
+            std::cout<<" - " << item.first << ": " << item.second << " gold\n";
+        }
+    }
+
+    bool buyItem(Player& player, const std::string& itemName) {
+        auto it = items.find(itemName);
+        if (it != items.end()) {
+            throw InventoryException("Item '" + itemName + "' not found in shop!");
+        }
+        int price = it->second;
+        if (player.spendGold(price)) {
+            player.addItem(itemName);
+            applyItemEffect(player,itemName);
+            return true;
+        }
+        return false;
+    }
+private:
+    void applyItemEffect(Player& player, const std::string& itemName) {
+        if (itemName == "Health Potion") {
+            player.setHealth(player.getHealth()+50);
+            std::cout<<"Restored 50 HP!\n";
+        }
+        else if (itemName == "Attack Boost") {
+            player.setAttackPower(player.getAttackPower()+5);
+            std::cout<<"Gained 5 ATK!\n";
+        }
+        else if (itemName == "Defense Boost") {
+            player.setDefense(player.getDefense()+10);
+            std::cout<<"Gained 10 DEF!\n";
+        }
+        else if (itemName == "Speed Boost") {
+            player.setSpeed(player.getSpeed()+3);
+            std::cout<<"Gained 3 SPD!\n";
+        }
+        //Eventual alte efecte
+    }
+};
+Shop* Shop::instance = nullptr;
+                                                            /// FACTORY - ENEMYFACTORY ///
 
 int main() {
 };
