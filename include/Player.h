@@ -33,6 +33,7 @@ public:
     void addGold(int amount);
     bool spendGold(int amount);
     void addItem(const std::string& item);
+    void removeItem(const std::string& item);
     void showInventory() const;
                                                            // ABILITATI //
 private:
@@ -44,6 +45,7 @@ private:
 public:
     [[nodiscard]] int getGold() const { return gold; }
     [[nodiscard]] int getExp() const { return experience; }
+    [[nodiscard]] int getExpToNext() const { return experienceToNext; }
     void setGold(int setgold) { gold = setgold; }
     void setExp(int setexp) { experience = setexp; }
 };

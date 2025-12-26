@@ -66,7 +66,7 @@
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*static_cast<int>(1.5);
+            case Difficulty::MEDIUM: return static_cast<int>(base*1.5);
             case Difficulty::HARD: return base*2;
             case Difficulty::BOSS: return base*3;
         }
@@ -83,8 +83,8 @@
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*static_cast<int>(1.3);
-            case Difficulty::HARD: return base*static_cast<int>(1.6);
+            case Difficulty::MEDIUM: return static_cast<int>(base*1.3);
+            case Difficulty::HARD: return static_cast<int>(base*1.6);
             case Difficulty::BOSS: return base*2;
         }
         return base;
@@ -100,8 +100,8 @@
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*static_cast<int>(1.3);
-            case Difficulty::HARD: return base*static_cast<int>(1.6);
+            case Difficulty::MEDIUM: return static_cast<int>(base*1.3);
+            case Difficulty::HARD: return static_cast<int>(base*1.6);
             case Difficulty::BOSS: return base*2;
         }
         return base;
@@ -117,9 +117,9 @@
         // Difficulty multiplier
         switch (diff) {
             case Difficulty::EASY: return base;
-            case Difficulty::MEDIUM: return base*static_cast<int>(1.2);
-            case Difficulty::HARD: return base*static_cast<int>(1.4);
-            case Difficulty::BOSS: return base*static_cast<int>(1.6);
+            case Difficulty::MEDIUM: return static_cast<int>(base*1.2);
+            case Difficulty::HARD: return static_cast<int>(base*1.4);
+            case Difficulty::BOSS: return static_cast<int>(base*1.6);
         }
         return base;
     }
@@ -180,4 +180,10 @@
         defense+=15;
         attackPower-=5;
         speed-=5;
+        //Special: if these guys make you only do one damage then the battle is basically won
+        //because they do shit damage, so im just going to make them kill themselves
+        if (attackPower<=5) {
+            std::cout << name << " Morphed too much. Collapsed under its own weight!\n";
+            health=0;
+        }
     }

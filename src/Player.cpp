@@ -32,7 +32,7 @@
             std::cout << "HEROIC STRIKE activated! ";
         }
         if (shieldBashCooldown == 4) {
-            damage*=static_cast<int>(1.5);
+            damage=static_cast<int>(damage*1.5);
             target.setSpeed(target.getSpeed()-2);
             std::cout << "SHIELD BASH activated!\n";
         }
@@ -47,13 +47,15 @@
         std::cout << "1. Heroic Strike (2x damage, 3 turn cooldown)\n";
         std::cout << "2. Shield Bash (1.5x damage + enemy SPD lowers by 2, 4 turn cooldown)\n";
         std::cout << "3. Second Wind (heal, x2 uses per battle)\n";
+        std::cout << "4. Exit\n";
         int choice;
         std::cin >> choice;
         switch (choice) {
-            case 1: heroicStrike(); break;
-            case 2: shieldBash(); break;
+            case 1: if (heroicStrike()) break;
+            case 2: if (shieldBash()) break;
             case 3: secondWind(); break;
-            default: std::cout<<"Invalid choice!\n";
+            case 4: return;
+            default: std::cout<<"Invalid choice!\n"; break;
         }
         if (heroicStrikeCooldown > 0) heroicStrikeCooldown--;
         if (shieldBashCooldown > 0) shieldBashCooldown--;
@@ -100,6 +102,13 @@
         inventory.addItem(item);
         std::cout << "Added " << item << " to inventory\n";
     }
+    void Player::removeItem(const std::string& item) {
+         if (inventory.removeItem(item)) {
+             std::cout<<"Removed " << item << " from inventory.\n";
+         } else {
+             std::cout<<"Item not found in inventory.\n";
+         }
+     }
 
     void Player::showInventory() const {
         inventory.display();
@@ -107,7 +116,7 @@
     }
     bool Player::heroicStrike() {
         if (heroicStrikeCooldown > 0) {
-            std::cout<<"Heroic Strike is on cooldown for " << heroicStrikeCooldown << "more turns!\n";
+            std::cout<<"Heroic Strike is on cooldown for " << heroicStrikeCooldown << " more turns!\n";
             return false;
         }
         heroicStrikeCooldown=3;
@@ -128,7 +137,7 @@
             return;
         }
         std::cout<<name<<" uses SECOND WIND!\n";
-        int healAmount = maxHealth*static_cast<int>(0.3);
+        int healAmount = static_cast<int>(maxHealth*(0.3));
         health+=healAmount;
         if (health > maxHealth) health = maxHealth;
         std::cout<<"Healed for " << healAmount << " HP! (Now: " << health << "/" << maxHealth << ")\n";

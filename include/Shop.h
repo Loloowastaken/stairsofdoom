@@ -17,6 +17,5 @@ public:
     static Shop& getInstance();
     void displayItems() const;
     bool buyItem(Player& player, const std::string& itemName);
-private:
     static void applyItemEffect(Player& player, const std::string& itemName);
 };
