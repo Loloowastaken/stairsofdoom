@@ -51,10 +51,10 @@
         int choice;
         std::cin >> choice;
         switch (choice) {
-            case 1: if (heroicStrike()) break;
-            case 2: if (shieldBash()) break;
+            case 1: if (heroicStrike()) break; return;
+            case 2: if (shieldBash()) break; return;
             case 3: secondWind(); break;
-            case 4: return;
+            case 4: break;
             default: std::cout<<"Invalid choice!\n"; break;
         }
         if (heroicStrikeCooldown > 0) heroicStrikeCooldown--;
@@ -94,7 +94,7 @@
             std::cout << "Spent " << amount << " gold. Total remaining: " << gold << "\n";
             return true;
         }
-        std::cout << "Not enough gold! You need " << amount << ", but you have " << gold << "\n";
+        std::cout << "Not enough cash! You need " << amount << ", but you have " << gold << "\n";
         return false;
     }
 

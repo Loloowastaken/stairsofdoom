@@ -15,16 +15,16 @@
     }
     void Shop::displayItems() const {
         std::cout<<"\n=== SHOP ===\n";
-        for (const auto& item : items) {
-            std::cout<<" - " << item.first << ": " << item.second << " gold\n";
+        for (const auto&[fst, snd] : items) {
+            std::cout<<" - " << fst << ": " << snd << " gold\n";
         }
     }
     bool Shop::buyItem(Player& player, const std::string& itemName) {
         const auto it = items.find(itemName);
-        if (it != items.end()) {
+        if (it == items.end()) {
             throw InventoryException("Item '" + itemName + "' not found in shop!");
         }
-        if (const int price = it->second; player.spendGold(price)) {
+        if (int price = it->second; player.spendGold(price)) {
             player.addItem(itemName);
             return true;
         }
@@ -32,7 +32,7 @@
     }
     void Shop::applyItemEffect(Player& player, const std::string& itemName) {
         if (itemName == "HealthPotion") {
-            const int healAmount=player.getMaxHealth()*static_cast<int>(0.30); // heals 30%
+            const int healAmount=static_cast<int>(player.getMaxHealth()*(0.30)); // heals 30%
             player.setHealth(player.getHealth()+healAmount);
             std::cout<<"Restored " << healAmount << " HP!\n";
         }

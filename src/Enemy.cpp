@@ -72,13 +72,13 @@
         }
         return base;
     }
-    int Enemy::calculateAttack (EnemyType type, Difficulty diff, int level) {
+    int Enemy::calculateAttack (EnemyType type, Difficulty diff, int level) { // should be HIGH to avoid frequent slapfights
         int base = 5+level*2;
         switch (type) {
-            case EnemyType::GOBLIN: base = 3+level; break;
-            case EnemyType::SKELETON: base = 6+level*2; break;
-            case EnemyType::ORC: base = 8+level*3; break;
-            case EnemyType::SLIME: base = 2+level; break;
+            case EnemyType::GOBLIN: base+=5+level; break;
+            case EnemyType::SKELETON: base+=7+level*2; break;
+            case EnemyType::ORC: base+=8+level*3; break;
+            case EnemyType::SLIME: base+=2+level; break;
         }
         // Difficulty multiplier
         switch (diff) {
@@ -90,12 +90,12 @@
         return base;
     }
     int Enemy::calculateDefense (EnemyType type, Difficulty diff, int level) {
-        int base = 3+level*2;
+        int base = 3+level; // this stat is DANGEROUS, makes combat insufferable
         switch (type) {
-            case EnemyType::GOBLIN: base = 3+level*2; break;
-            case EnemyType::SKELETON: base = 5+level*3; break;
+            case EnemyType::GOBLIN: base = 3+level; break;
+            case EnemyType::SKELETON: base = 5+level; break;
             case EnemyType::ORC: base = 2+level; break;
-            case EnemyType::SLIME: base = 10+level*3; break;
+            case EnemyType::SLIME: base = 10+level; break;
         }
         // Difficulty multiplier
         switch (diff) {
@@ -180,10 +180,4 @@
         defense+=15;
         attackPower-=5;
         speed-=5;
-        //Special: if these guys make you only do one damage then the battle is basically won
-        //because they do shit damage, so im just going to make them kill themselves
-        if (attackPower<=5) {
-            std::cout << name << " Morphed too much. Collapsed under its own weight!\n";
-            health=0;
-        }
     }

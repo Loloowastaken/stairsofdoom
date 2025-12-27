@@ -5,7 +5,7 @@
 
 GameManager::GameManager()
     : currentFloor(1), totalFloors(10), gameRunning(true), enemiesDefeated(0),
-      goldCollected(0), floorsCleared(0), rng(std::random_device{}()) {
+      goldCollected(0), floorsCleared(0), hasFought(false), playerFled(false), rng(std::random_device{}()) {
     std::cout << "=== STAIRS OF DOOM ===" << std::endl;
 }
 GameManager::~GameManager() {
@@ -30,8 +30,8 @@ void GameManager::mainMenu() {
                 std::cout << "Beginning journey for " << player->getName() << ".\n";
                 std::cout << "Your journey begins on Floor 1.\n";
                 //Give out some starting items
-                player->addItem("Health Potion");
-                player->addItem("Health Potion");
+                player->addItem("HealthPotion");
+                player->addItem("HealthPotion");
                 player->addGold(100);
                 gameLoop();
                 return;
@@ -49,7 +49,6 @@ void GameManager::gameLoop() {
     std::cout << "\n=== ADVENTURE START ===\n";
     while (gameRunning && player && player->isAlive()) {
         displayFloorInfo();
-        generateEnemies();
         int choice = 0;
         std::cout<<"\nWhat would you like to do on this floor?\n";
         std::cout<<"1. Explore floor\n";
@@ -63,7 +62,7 @@ void GameManager::gameLoop() {
             case 1: exploreFloor(); break;
             case 2: shopPhase(); break;
             case 3: inventoryPhase(); break;
-            case 4: if (enemies.empty()) {
+            case 4: if (enemies.empty() && hasFought==true) { //enemies being empty is a weak condition, we need to have fought them as well
                 handleFloorCompletion();
             } else {
                 std::cout<<"You must defeat all enemies on this floor before proceeding.\n";
@@ -93,9 +92,11 @@ void GameManager::gameLoop() {
 
 void GameManager::exploreFloor() {
     std::cout << "\n=== EXPLORING FLOOR " << currentFloor << " ===\n";
-
     //Random encounter
-    if (randomChance(70)) {
+    if ((randomChance(70) && hasFought==false) || (hasFought==true && playerFled==true)) { //no grinding, check for cowardice
+        if (!playerFled) generateEnemies(); //first time encounter
+        hasFought=true;
+        playerFled=false;
         std::cout<<"Encountered " << enemies.size() << " enemy(ies)!\n";
         combatPhase();
     } else {
@@ -107,7 +108,7 @@ void GameManager::exploreFloor() {
             std::cout<< "You found " << goldFound << " gold!\n";
         } else if (randomChance(30)) {
             std::cout<<"You found a Health Potion!\n";
-            player->addItem("Health Potion");
+            player->addItem("HealthPotion");
         } else {
             std::cout<<"The floor is empty...for now...\n";
         }
@@ -128,11 +129,15 @@ void GameManager::combatPhase() {
     });
     //Combat loop
     while (!enemies.empty() && player->isAlive()) {
+        if (playerFled==true) {break;}
+        for (const auto*character : turnOrder) {
+            if (character->isAlive()) character->displayStatus();
+        }
         for (auto* character : turnOrder) {
             if (!character->isAlive()) continue;
-            character->displayStatus();
             if (character == player.get()) {
                 playerTurn();
+                if (playerFled==true) {break;}
             } else {
                 // Find which enemy this is
                 auto it = std::ranges::find_if(enemies, [character](const auto& enemy) {
@@ -141,10 +146,6 @@ void GameManager::combatPhase() {
                 if (it != enemies.end() && (*it)->isAlive()) {
                     enemyTurn(**it);
                 }
-            }
-            //Check if combat has ended
-            if (enemies.empty() || !player->isAlive()) {
-                break;
             }
         }
         //Remove dead enemies at the end of the round
@@ -156,12 +157,28 @@ void GameManager::combatPhase() {
         if (player->isAlive() && enemies.empty()) {
             handleCombatVictory();
         }
+        //Check for stalemate (enemy does <=3 ATK, player obviously wins, but it takes centuries)
+        if (isStalemate()) {
+            std::cout<<"\nThese wretches are no match for you! They run away in fear.\n";
+            handleCombatVictory();
+            enemies.clear();
+        }
     }
+}
+
+bool GameManager::isStalemate() const {
+    bool allEnemiesWeak=true;
+    for (const auto&enemy:enemies) {
+        if (const int enemyDamage=enemy->getAttackPower() - (player->getDefense()/2); enemyDamage>=4) {
+            allEnemiesWeak=false;
+            break;
+        }
+    }
+    return allEnemiesWeak;
 }
 
 void GameManager::playerTurn() {
     displayCombatMenu();
-
     int choice = 0;
     std::cin>>choice;
     switch (choice) {
@@ -193,14 +210,15 @@ void GameManager::playerTurn() {
         }
         case 2: player->specialAbility(); break;
         case 3: useItem(); break;
-        case 4:
+        case 4: { // i implemented fleeing on a whim, and it was my worst mistake.
             if (fleeCombat()) {
                 std::cout<<"You escaped from combat!\n";
-                enemies.clear();
-                return;
-            } else {
-                std::cout << "Failed to escape!\n";
-            } break;
+                playerFled=true;
+                break;
+            }
+            std::cout << "Failed to escape!\n";
+        }
+        break;
         default:
             std::cout<<"Invalid action!\n";
     }
@@ -237,12 +255,14 @@ void GameManager::shopPhase() const {
         std::cin>>choice;
 
         if (choice==1) {
-            std::cout<< "Enter item name (or 'list' to see items): ";
+            std::cout<< "Enter item name (or 'list' to see items, or 'exit' to exit item display): ";
             std::string itemName;
             std::cin>>itemName;
 
             if (itemName == "list") {
                 shop.displayItems();
+            } else if (itemName == "exit") {
+                return;
             } else {
                 try {
                     if (shop.buyItem(*player, itemName)) {
@@ -269,6 +289,7 @@ void GameManager::inventoryPhase() const {
         if (choice==1) {
             useItem();
         }
+        else break;
     }
 }
 void GameManager::useItem() const {
@@ -276,7 +297,29 @@ void GameManager::useItem() const {
     std::cout<<"Enter item name to use: ";
     std::string itemName;
     std::cin>>itemName;
-    Shop::applyItemEffect(*player,itemName);
+    try {
+        if (itemName == "HealthPotion") {
+            const int healAmount=static_cast<int>(player->getMaxHealth()*(0.30)); // heals 30%
+            player->setHealth(player->getHealth()+healAmount);
+            std::cout<<"Restored " << healAmount << " HP!\n";
+        }
+        else if (itemName == "AttackBoost") {
+            player->setAttackPower(player->getAttackPower()+5);
+            std::cout<<"Gained 5 ATK!\n";
+        }
+        else if (itemName == "DefenseBoost") {
+            player->setDefense(player->getDefense()+10);
+            std::cout<<"Gained 10 DEF!\n";
+        }
+        else if (itemName == "SpeedBoost") {
+            player->setSpeed(player->getSpeed()+3);
+            std::cout<<"Gained 3 SPD!\n";
+        }
+    } catch (InventoryException &e ) {
+        std::cout<<e.what()<<std::endl;
+    }
+    //Eventual alte efecte
+    player->removeItem(itemName);
 }
 
 void GameManager::generateEnemies() {
@@ -286,7 +329,7 @@ void GameManager::generateEnemies() {
         int randType = randomInt(0,3);
         Enemy::Difficulty diff;
         std::string enemyName;
-        switch (int randName = randomInt(0,30)) { // why the fuck did i do this? am i stupid?
+        switch (randomInt(0,30)) { // why the fuck did i do this? am i stupid?
             case 0: enemyName = "Affrath"; break;
             case 1: enemyName = "Belzagoth"; break;
             case 2: enemyName = "Charflah"; break;
@@ -334,8 +377,8 @@ void GameManager::generateEnemies() {
 
         enemies.push_back(std::make_unique<Enemy>(enemyName, type, diff, currentFloor));
     }
-    //Boss on every 10th floor
-    if (currentFloor%10==0) {
+    //Boss on every 3rd floor for testing
+    if (currentFloor%3==0) {
         enemies.push_back(std::make_unique<Boss>("Floor Guardian", Enemy::EnemyType::ORC, Enemy::Difficulty::BOSS, currentFloor, "Guardian of Floor " + std::to_string(currentFloor)));
     }
 }
@@ -352,7 +395,7 @@ void GameManager::handleCombatVictory() {
     if (randomChance(30)) {
         //item drop
         std::cout<<"Found a health potion!\n"; // again might restructure if adding more items
-        player->addItem("Health Potion");
+        player->addItem("HealthPotion");
     }
 }
 
@@ -360,6 +403,8 @@ void GameManager::handleFloorCompletion() {
     std::cout<<"\n=== FLOOR " << currentFloor << " CLEARED! ===\n";
     floorsCleared++;
     currentFloor++;
+    hasFought = false; // prevents skipping!
+    playerFled = false; // cowardice is reset!
     if (currentFloor<=totalFloors) {
         std::cout<<"Advancing to Floor " << currentFloor << "...\n";
         //tiny heal between floors
@@ -457,7 +502,8 @@ void GameManager::gameOver(bool won) {
         std::cout<<"Congratulations on your win. The game has ended.\n";
         gameRunning = false;
     } else {
-        std::cout<<"Get back up and try again. The game has ended.\n";
-        gameRunning = false;
+        std::cout<<"Get back up and try again, even if only to fail once more.\n";
+        player.reset();
+        mainMenu();
     }
 }

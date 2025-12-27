@@ -66,7 +66,6 @@ public:
     [[nodiscard]] bool isAlive() const { return health > 0; }
     //Metoda statica
     static int getTotalCharacters() { return totalCharacters; };
-protected:
     //Metoda helper pentru a calcula damage
     [[nodiscard]] int calculateDamage(const Character& target) const;
 };

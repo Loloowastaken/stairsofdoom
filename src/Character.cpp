@@ -55,9 +55,7 @@ void Character::attack(Character& target) {
     target.takeDamage(damage);
 }
 void Character::takeDamage(int damage) {
-    int actualDamage = damage - defense;
-    if (actualDamage<1) actualDamage=1;
-    health-=actualDamage;
+    health-=damage;
     if (health<0) health=0;
 }
 Character::~Character()= default;

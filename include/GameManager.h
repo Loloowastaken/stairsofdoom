@@ -22,6 +22,8 @@ private:
     int enemiesDefeated;
     int goldCollected;
     int floorsCleared;
+    bool hasFought; // if lebron was a boolean
+    bool playerFled; // catering for useless mechanics award
 
     //evil rng
     std::mt19937 rng;
@@ -44,7 +46,6 @@ private:
     void processPlayerDeath();
     void exploreFloor();
 
-
     void combatPhase();
     void shopPhase() const;
     void inventoryPhase() const;
@@ -53,6 +54,7 @@ private:
     void playerTurn();
     void enemyTurn(Character& enemy);
     void useItem() const;
+    bool isStalemate() const; // just trust me
     bool fleeCombat();
 
     //Event handlers
