@@ -38,7 +38,8 @@ public:
     [[nodiscard]] EnemyType getType() const { return type; }
     [[nodiscard]] const std::string & getDescription() const { return description; }
     [[nodiscard]] Difficulty getDiff() const { return difficulty; }
-    void setDescription();                                                           // ABILITATI INDIVIDUALE //
+    void setDescription();
+                                                            // ABILITATI INDIVIDUALE //
 private:
     void goblinSpecial();
     void skeletonSpecial();

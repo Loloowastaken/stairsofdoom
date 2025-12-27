@@ -6,7 +6,7 @@
 #include <iostream>
 
 GameManager::GameManager()
-    : currentFloor(1), totalFloors(10), gameRunning(true), enemiesDefeated(0),
+    : currentFloor(1), totalFloors(100), gameRunning(true), enemiesDefeated(0),
       goldCollected(0), floorsCleared(0), hasFought(false), playerFled(false), rng(std::random_device{}()) {
     std::cout << "=== STAIRS OF DOOM ===" << std::endl;
 }
@@ -133,14 +133,8 @@ void GameManager::combatPhase() {
     }
     //Sort by speed (descending)
     std::ranges::sort(turnOrder, [](const Character* a, const Character* b) {
-        return a > b; // folosind operatorul nonmembru
+        return a < b; // folosind operatorul nonmembru
     });
-    //Forced usage of == to justify its existence
-    for (const auto&enemy : enemies) {
-        if (enemy!=player){
-            std::cout<<"An unbalanced fight!\n";
-        }
-    }
     //Combat loop
     while (!enemies.empty() && player->isAlive()) {
         if (playerFled==true) {break;}
@@ -233,6 +227,14 @@ void GameManager::playerTurn() {
             std::cout << "Failed to escape!\n";
         }
         break;
+        case 5: {
+            std::cout<<"Analyzing enemies...\n";
+            for (const auto & enemie : enemies) {
+                if (const auto* enemy = dynamic_cast<const Enemy *>(enemie.get())) {
+                    std::cout<<enemie->getName()<<" "<<enemy->getDescription();
+                }
+            }
+        } break;
         default:
             std::cout<<"Invalid action!\n";
             std::cin.clear();
@@ -381,11 +383,15 @@ void GameManager::generateEnemies() {
         else if (currentFloor<=80) diff = Enemy::Difficulty::HARD;
         else diff = Enemy::Difficulty::BOSS;
 
-        enemies.push_back(std::make_unique<Enemy>(enemyName, type, diff, currentFloor));
+        auto enemy = std::make_unique<Enemy>(enemyName, type, diff, currentFloor);
+        enemy->setDescription();
+        enemies.push_back(std::move(enemy));
     }
-    //Boss on every 3rd floor for testing
-    if (currentFloor%3==0) {
-        enemies.push_back(std::make_unique<Boss>("Floor Guardian", Enemy::EnemyType::ORC, Enemy::Difficulty::BOSS, currentFloor, "Guardian of Floor " + std::to_string(currentFloor)));
+    //Boss on every 10th floor
+    if (currentFloor%10==0) {
+        auto boss = std::make_unique<Boss>("Floor Guardian", Enemy::EnemyType::ORC, Enemy::Difficulty::BOSS, currentFloor, "Guardian of Floor " + std::to_string(currentFloor));
+        boss->setDescription();
+        enemies.push_back(std::move(boss));
     }
 }
 
@@ -478,6 +484,7 @@ void GameManager::displayCombatMenu() {
     std::cout<<"2. Special ability\n";
     std::cout<<"3. Use item\n";
     std::cout<<"4. Flee\n";
+    std::cout<<"5. Analyze\n";
 }
 
 bool GameManager::fleeCombat() {

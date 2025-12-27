@@ -1,14 +1,6 @@
-# Nu primesc notă pentru că nu am pus titlu și descriere
+# Stairs of DOOM
 
-### Folosiți template-ul corespunzător grupei voastre!
-
-| Laborant  | Link template                                |
-|-----------|----------------------------------------------|
-| Dragoș B  | https://github.com/Ionnier/oop-template      |
-| Tiberiu M | https://github.com/MaximTiberiu/oop-template |
-| Marius MC | https://github.com/mcmarius/oop-template     |
-
-## Instrucțiuni de compilare
+*Mini-joc cu 100 de nivele in care jucatorul trebuie sa urce scari si sa se bata cu inamici.*
 
 Proiectul este configurat cu CMake.
 
@@ -28,73 +20,89 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja
 
 La acest pas putem cere să generăm fișiere de proiect pentru diverse medii de lucru.
 
-## Cerințe obligatorii
+## Descriere a proiectului
 
-Nerespectarea duce la nepunctarea proiectului
+**Atentie**: Proiectul este facut cu structura unui joc. Totusi, este un proiect facut pentru simplul scop de a intra la colocviu. Asadar, va rog nu incercati sa il 'jucati', fiindca nu este deloc balansat.
 
-  - programul va fi scris în C++
-  - programul va avea un meniu interactiv (doar pentru ilustrarea funcționalității)
-  - programul nu are erori de compilare
-  - fară variabile globale
-  - datele membre private(sau protected)
-  - GitHub Actions trecute
-  - commit-uri pe Git adecvate si punctuale
-  - folosirea a funcționalităților limbajului fără sens
-  - folosirea a funcționlităților limbajului cu scopul de a încălca "legal" o altă regulă
-      - folosirea excesivă a claselor friend
-      - folosirea excesviă a elementelor statice
-  - lipsa separarea implementarii de definitie
+Fiecare entitate a jocului are atributele urmatoare:
+- LVL = Level, care creste pentru Player pe parcursul luptelor, iar pentru inamici creste la fiecare nivel in mod incremental.
+- HP = Health, care determina cata viata are o entitate, aceasta fiind considerata 'moarta' la HP=0. HP nu poate fi mai mic decat 0.
+- ATK = Attack, care determina puterea de baza cu care ataca o entitate pe alta
+- DEF = Defense, care determina cat 'damage' se ia intr-un atac, bazat pe formula DMG=ATK-DEF/2.
+- SPD = Speed, care determina ordinea turei intr-o lupta.
 
-## Cerințe
-- [ ] definirea a minim **2-3 ieararhii de clase** care sa interactioneze in cadrul temei alese (fie prin compunere, agregare sau doar sa apeleze metodele celeilalte intr-un mod logic) (6p)
-  - minim o clasa cu:
-    - [ ] constructori de inițializare [*](https://github.com/Ionnier/poo/tree/main/labs/L02#crearea-obiectelor)
-    - [ ] constructor supraîncărcat [*](https://github.com/Ionnier/poo/tree/main/labs/L02#supra%C3%AEnc%C4%83rcarea-func%C8%9Biilor)
-    - [ ] constructori de copiere [*](https://github.com/Ionnier/poo/tree/main/labs/L02#crearea-obiectelor)
-    - [ ] `operator=` de copiere [*](https://github.com/Ionnier/poo/tree/main/labs/L02#supra%C3%AEnc%C4%83rcarea-operatorilor)
-    - [ ] destructor [*](https://github.com/Ionnier/poo/tree/main/labs/L02#crearea-obiectelor)
-    - [ ] `operator<<` pentru afișare (std::ostream) [*](https://github.com/Ionnier/poo/blob/main/labs/L02/fractie.cpp#L123)
-    - [ ] `operator>>` pentru citire (std::istream) [*](https://github.com/Ionnier/poo/blob/main/labs/L02/fractie.cpp#L128)
-    - [ ] alt operator supraîncărcat ca funcție membră [*](https://github.com/Ionnier/poo/blob/main/labs/L02/fractie.cpp#L32)
-    - [ ] alt operator supraîncărcat ca funcție non-membră [*](https://github.com/Ionnier/poo/blob/main/labs/L02/fractie.cpp#L39) - nu neaparat ca friend
-  - in derivate
-      - [ ] implementarea funcționalităților alese prin [upcast](https://github.com/Ionnier/poo/tree/main/labs/L04#solu%C8%9Bie-func%C8%9Bii-virtuale-late-binding) și [downcast](https://github.com/Ionnier/poo/tree/main/labs/L04#smarter-downcast-dynamic-cast)
-        - aceasta va fi făcută prin **2-3** metode specifice temei alese
-        - funcțiile pentru citire / afișare sau destructorul nu sunt incluse deși o să trebuiască să le implementați 
-      - [ ] apelarea constructorului din clasa de bază din [constructori din derivate](https://github.com/Ionnier/poo/tree/main/labs/L04#comportamentul-constructorului-la-derivare)
-      - [ ] suprascris [cc](https://github.com/Ionnier/poo/tree/main/labs/L04#comportamentul-constructorului-de-copiere-la-derivare)/op= pentru copieri/atribuiri corecte
-      - [ ] destructor [virtual](https://github.com/Ionnier/poo/tree/main/labs/L04#solu%C8%9Bie-func%C8%9Bii-virtuale-late-binding)
-  - pentru celelalte clase se va definii doar ce e nevoie
-  - minim o ierarhie mai dezvoltata (cu 2-3 clase dintr-o clasa de baza)
-  - ierarhie de clasa se considera si daca exista doar o clasa de bază însă care nu moștenește dintr-o clasă din altă ierarhie
-- [ ] cât mai multe `const` [(0.25p)](https://github.com/Ionnier/poo/tree/main/labs/L04#reminder-const-everywhere)
-- [ ] funcții și atribute `static` (în clase) [0.5p](https://github.com/Ionnier/poo/tree/main/labs/L04#static)
-  - [ ] 1+ atribute statice non-triviale 
-  - [ ] 1+ funcții statice non-triviale
-- [ ] excepții [0.5p](https://github.com/Ionnier/poo/tree/main/labs/L04#exception-handling)
-  - porniți de la `std::exception`
-  - ilustrați propagarea excepțiilor
-  - ilustrati upcasting-ul în blocurile catch
-  - minim folosit într-un loc în care tratarea erorilor în modurile clasice este mai dificilă
-- [ ] folosirea unei clase abstracte [(0.25p)](https://github.com/Ionnier/poo/tree/main/labs/L04#clase-abstracte)
- - [ ] clase template
-   - [ ] crearea unei clase template [(1p)](https://github.com/Ionnier/poo/tree/main/labs/L08)
-   - [ ] 2 instanțieri ale acestei clase (0.5p)
- - STL [(0.25p)](https://github.com/Ionnier/poo/tree/main/labs/L07#stl)
-   - [ ] utilizarea a două structuri (containere) diferite (vector, list sau orice alt container care e mai mult sau mai putin un array)
-   - [ ] utilizarea a unui algoritm cu funcție lambda (de exemplu, sort, transform)
- - Design Patterns [(0.75p)](https://github.com/Ionnier/poo/tree/main/labs/L08)
-   - [ ] utilizarea a două șabloane de proiectare
+Player are in mod specific si:
+- EXP=Experienta, obtinuta prin explorare si lupta, care va creste LVL la un anumit punct, dupa care este redus la 0.
+- EXPTotal = cata experienta este necesara pentru a creste LVL.
+- Cresterea LVL duce la cresterea atributelor.
+- Gold = Aur, cu care se pot cumpara iteme (vezi Shop)
+- Inventory = cu clasa template ItemContainer isi poate gestiona si folosi diverse iteme care cresc staturile anterioare.
 
-### Observații
+Enemy au doua enum classuri diferite:
+- Type = determina ce fel de abilitate folosesc in timpul luptei
+- Difficulty = determina scaling pt atribute si aur obtinut cand sunt invinsi
 
-* Pot exista depunctări până la 2p pentru diferite aspecte precum:
-  - memory leak-uri
-  - nefolosirea destructorului virtual la nevoie
-  - abuzarea de diferite concepte (toate funcțiile declarate virtual)
-  - apelarea de funcții virtual în constructori
+- Enemy pot fi (in ordine de putere) - SLIME; GOBLIN; SKELETON; ORC
+- Enemy pot fi (in ordine de dificultate) EASY (nivel<=10); MEDIUM(nivel<=30); HARD(nivel<=80); BOSS (fiecare 10 nivele si 81-100)
 
-* În general, acestea sunt prezente în [CppCoreGuideline](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md), dar nu e nevoie să parcurgeți documentul, doar să scrieți codul suficient de organizat
+Atributele, aurul si experienta data cand sunt invinsi sunt calculate bazat pe aceste doua enumuri, precum si nivelul curent.
 
-* folderele `build/` și `install_dir/` sunt adăugate în fișierul `.gitignore` deoarece
-conțin fișiere generate și nu ne ajută să le versionăm.
+Boss se mai refera si la clasa derivata speciala lui Enemy, care poate intra in faza speciala dupa ce s-a ajuns la o anumita valoare de HP.
+
+
+Jocul are 100 de nivele, fiecare avand aceeasi structura.
+Pe fiecare nivel, exista 1-3 inamici, plus un 'boss' cu staturi imense odata la 10 nivele.
+Acestia trebuie invinsi inainte sa se avanseze la urmatorul nivel.
+
+Scopul jocului este completarea levelului 100 (nu este recomandat sa incercati) fara ca Player sa moara.
+Jocul se termina cand Player HP = 0 sau levelcurent>100. 
+
+Jucatorul are 4 actiuni pe fiecare nivel:
+1. Explorare -> poate intampina inamici, aur, sau item
+2. Shop -> poate cumpara iteme
+3. Inventar (poate fi accesat si in lupta) -> poate folosi iteme
+4. Avansare -> Avanseaza la urmatorul nivel (nepermis pana cand nivelul este gol)
+
+Faza de explorare poate duce la lupta.
+Lupta are trei stagii:
+1. Incepe prin a determina ordinea in care se va ataca, bazata pe SPD.
+2. Tura jucatorului, cand vine.
+3. Tura inamicului, cand vine.
+
+Tura jucatorului ii permite 5 alegeri:
+1. Atac, dupa care alege inamicul pe care sa il atace.
+2. Abilitate speciala, dupa care alege pe care sa o foloseasca
+3. Foloseste un item.
+4. Fuge din lupta.
+5. Analizeaza inamicii, poate vedea descrierea si dificultatea lor.
+
+Abilitatiile speciale jucatorului sunt:
+1. Heroic Strike = dublu damage in urmatoarul atac. Cooldown 3 ture.
+2. Shield Bash = 1.5x damage si atributele inamicului sunt reduse. Cooldown 4 ture.
+3. Second Wind = Heal de urgenta. 2 folosiri per lupta.
+
+Abilitatile speciale inamicilor sunt:
+1. Goblin -> Trick = Isi creste SPD.
+2. Skeleton -> Fortify = Isi creste DEF.
+3. Orc -> Rage = Isi creste ATK mult, dar scade DEF.
+4. Slime -> Bulwark Form = Isi creste DEF mult, dar scade ATK si SPD.
+
+Fugirea din lupta nu reseteaza inamicii. Inamicii trebuie invinsi pentru a avansa.
+Lupta se poate termina prematur cand este clar ca inamicii sunt prea slabi pentru a omori jucatorul.
+
+Itemele sunt banale:
+1. HealthPotion = restoreaza 30% din HP maxim
+
+2,3,4. Attack/Defense/SpeedBoost = creste ATK/DEF/SPD.
+
+Shop permite cumpararea itemelor, fiecare item are un nume si pret corespunzator. Itemele se adauga in inventar atat timp cat jucatorul are aurul mai mare decat pretul, de acolo pot fi folosite.
+
+*Observatie:* Jocul foloseste in mod generos libraria <random>, pentru a determina mai multe evenimente in lupta, precum:
+- Daca se intampina inamici sau se gaseste aur sau se gaseste item sau se gaseste nimic in Explorare.
+- Daca inamicul ataca sau isi foloseste abilitatea unica.
+- Daca la avansare se creste LVL lui Player.
+- Daca se poate scapa sau nu (sansa 10-90%, calculata bazata pe SPD.)
+- Cat aur si cata experienta se primeste, intr-un anumit rang.
+- Numele inamicilor si tipul lor, astfel incat aproape fiecare lupta este diferita.
+
+Astfel, tastatura.txt are inputuri banale care nu interactioneaza cu aceste aspecte, dat fiind ca ar fi prea variabil.

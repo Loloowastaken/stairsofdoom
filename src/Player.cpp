@@ -34,7 +34,9 @@
         }
         if (shieldBashCooldown == 4) {
             damage=static_cast<int>(damage*1.5);
-            target.setSpeed(target.getSpeed()-2);
+            target.setAttackPower(target.getAttackPower()-10);
+            target.setDefense(target.getDefense()-10);
+            target.setSpeed(target.getSpeed()-5);
             std::cout << "SHIELD BASH activated!\n";
         }
         std::cout << "Player " << getName() << " attacks " << target.getName() << " for " << damage << " damage!\n";
@@ -46,7 +48,7 @@
     void Player::specialAbility() {
         std::cout << getName() << "\nChoose special ability:\n";
         std::cout << "1. Heroic Strike (2x damage, 3 turn cooldown)\n";
-        std::cout << "2. Shield Bash (1.5x damage + enemy SPD lowers by 2, 4 turn cooldown)\n";
+        std::cout << "2. Shield Bash (1.5x damage + enemy stats lowered, 4 turn cooldown)\n";
         std::cout << "3. Second Wind (heal, x2 uses per battle)\n";
         std::cout << "4. Exit\n";
         int choice;
