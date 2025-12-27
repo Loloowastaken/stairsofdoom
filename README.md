@@ -97,7 +97,7 @@ Itemele sunt banale:
 
 Shop permite cumpararea itemelor, fiecare item are un nume si pret corespunzator. Itemele se adauga in inventar atat timp cat jucatorul are aurul mai mare decat pretul, de acolo pot fi folosite.
 
-*Observatie:* Jocul foloseste in mod generos libraria <random>, pentru a determina mai multe evenimente in lupta, precum:
+*Observatie:* Jocul foloseste in mod generos libraria random, pentru a determina mai multe evenimente in lupta, precum:
 - Daca se intampina inamici sau se gaseste aur sau se gaseste item sau se gaseste nimic in Explorare.
 - Daca inamicul ataca sau isi foloseste abilitatea unica.
 - Daca la avansare se creste LVL lui Player.
