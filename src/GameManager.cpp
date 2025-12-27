@@ -38,10 +38,12 @@ void GameManager::mainMenu() {
             }
             case 2: {
                 std::cout<<"Farewell.\n";
+                gameRunning=false;
                 return;
             }
             default:
                 std::cout<<"Invalid choice.\n";
+                break;
         }
     }
 }
@@ -74,6 +76,7 @@ void GameManager::gameLoop() {
                 break;
             default:
                 std::cout<<"Invalid choice!\n";
+                return;
         }
 
         //Check for gameover
