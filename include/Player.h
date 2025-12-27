@@ -35,7 +35,10 @@ public:
     void addItem(const std::string& item);
     void removeItem(const std::string& item);
     void showInventory() const;
-                                                           // ABILITATI //
+
+    [[nodiscard]] bool hasItem(const std::string & string) const;
+
+    // ABILITATI //
 private:
     bool heroicStrike();
     bool shieldBash();

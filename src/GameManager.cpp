@@ -1,7 +1,9 @@
 #include <GameManager.h>
+#include <Enemy.h>
+#include <Boss.h>
+#include <Exception.h>
+#include <Shop.h>
 #include <iostream>
-#include <algorithm>
-#include <chrono>
 
 GameManager::GameManager()
     : currentFloor(1), totalFloors(10), gameRunning(true), enemiesDefeated(0),
@@ -43,6 +45,8 @@ void GameManager::mainMenu() {
             }
             default:
                 std::cout<<"Invalid choice.\n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 break;
         }
     }
@@ -71,12 +75,13 @@ void GameManager::gameLoop() {
             }
                 break;
             case 5:
-                std::cout<<"Returning to main menu...\n";
-                mainMenu();
-                break;
+                std::cout<<"Exiting game.\n"; // removes recursive chain
+                return;
             default:
                 std::cout<<"Invalid choice!\n";
-                return;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                break;
         }
 
         //Check for gameover
@@ -128,8 +133,14 @@ void GameManager::combatPhase() {
     }
     //Sort by speed (descending)
     std::ranges::sort(turnOrder, [](const Character* a, const Character* b) {
-        return a->getSpeed() > b->getSpeed();
+        return a > b; // folosind operatorul nonmembru
     });
+    //Forced usage of == to justify its existence
+    for (const auto&enemy : enemies) {
+        if (enemy!=player){
+            std::cout<<"An unbalanced fight!\n";
+        }
+    }
     //Combat loop
     while (!enemies.empty() && player->isAlive()) {
         if (playerFled==true) {break;}
@@ -212,7 +223,7 @@ void GameManager::playerTurn() {
             } break;
         }
         case 2: player->specialAbility(); break;
-        case 3: useItem(); break;
+        case 3: try { useItem(); } catch (const InventoryException &e) { std::cout<<e.what();} break;
         case 4: { // i implemented fleeing on a whim, and it was my worst mistake.
             if (fleeCombat()) {
                 std::cout<<"You escaped from combat!\n";
@@ -224,6 +235,9 @@ void GameManager::playerTurn() {
         break;
         default:
             std::cout<<"Invalid action!\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            break;
     }
 }
 
@@ -275,8 +289,10 @@ void GameManager::shopPhase() const {
                     std::cout<< e.what() << std::endl;
                 }
             }
-        } else if (choice==2) {
+        } else {
             std::cout << "???: Come again another day, stranger!";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
         }
     }
@@ -290,7 +306,7 @@ void GameManager::inventoryPhase() const {
         std::cout<<"Choice: ";
         std::cin>>choice;
         if (choice==1) {
-            useItem();
+           try{ useItem(); } catch (const InventoryException &e) { std::cout<<e.what() ;}
         }
         else break;
     }
@@ -300,29 +316,16 @@ void GameManager::useItem() const {
     std::cout<<"Enter item name to use: ";
     std::string itemName;
     std::cin>>itemName;
+    if (!player->hasItem(itemName)) {
+        std::cout << "You don't have '" << itemName << "' in your inventory!\n";
+        return;
+    }
     try {
-        if (itemName == "HealthPotion") {
-            const int healAmount=static_cast<int>(player->getMaxHealth()*(0.30)); // heals 30%
-            player->setHealth(player->getHealth()+healAmount);
-            std::cout<<"Restored " << healAmount << " HP!\n";
-        }
-        else if (itemName == "AttackBoost") {
-            player->setAttackPower(player->getAttackPower()+5);
-            std::cout<<"Gained 5 ATK!\n";
-        }
-        else if (itemName == "DefenseBoost") {
-            player->setDefense(player->getDefense()+10);
-            std::cout<<"Gained 10 DEF!\n";
-        }
-        else if (itemName == "SpeedBoost") {
-            player->setSpeed(player->getSpeed()+3);
-            std::cout<<"Gained 3 SPD!\n";
-        }
+        Shop::applyItemEffect(*player,itemName);
+        player->removeItem(itemName);
     } catch (InventoryException &e ) {
         std::cout<<e.what()<<std::endl;
     }
-    //Eventual alte efecte
-    player->removeItem(itemName);
 }
 
 void GameManager::generateEnemies() {
@@ -500,13 +503,12 @@ bool GameManager::randomChance(const int percentage) {
     return randomInt(1,100) <= percentage;
 }
 
-void GameManager::gameOver(bool won) {
+void GameManager::gameOver(const bool won) {
     if (won) {
         std::cout<<"Congratulations on your win. The game has ended.\n";
         gameRunning = false;
     } else {
-        std::cout<<"Get back up and try again, even if only to fail once more.\n";
-        player.reset();
-        mainMenu();
+        std::cout<<"You are welcome to try again. The game is over.\n";
+        gameRunning = false;
     }
 }

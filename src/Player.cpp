@@ -1,3 +1,4 @@
+#include <limits>
 #include <Player.h>
      Player::Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
@@ -21,7 +22,7 @@
         return *this;
     }
     Player::~Player() {
-        std::cout << "Player" << getName() << "destroyed\n";
+        std::cout << "Player " << getName() << " destroyed\n";
     }
     void Player::attack(Character &target) {
         int damage=calculateDamage(target);
@@ -55,7 +56,7 @@
             case 2: if (shieldBash()) break; return;
             case 3: secondWind(); break;
             case 4: break;
-            default: std::cout<<"Invalid choice!\n"; break;
+            default: std::cout<<"Invalid choice!\n"; std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); break;
         }
         if (heroicStrikeCooldown > 0) heroicStrikeCooldown--;
         if (shieldBashCooldown > 0) shieldBashCooldown--;
@@ -110,7 +111,16 @@
          }
      }
 
-    void Player::showInventory() const {
+bool Player::hasItem(const std::string &itemName) const {
+    for (const auto& item:inventory) {
+        if (item == itemName) {
+            return true;
+        }
+    }
+         return false;
+}
+
+void Player::showInventory() const {
         inventory.display();
         std::cout << "Gold: " << gold << "\n";
     }

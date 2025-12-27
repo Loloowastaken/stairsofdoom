@@ -82,6 +82,6 @@ bool operator<(const Character& c1, const Character& c2) {
     return c1.getSpeed() < c2.getSpeed();
 }
 bool operator==(const Character& c1, const Character& c2) {
-    return c1.getLevel() == c2.getLevel() && c1.getAttackPower() == c2.getAttackPower();
+    return c1.getLevel() == c2.getLevel();
 }
 

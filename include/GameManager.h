@@ -4,10 +4,6 @@
 #include <vector>
 #include <Character.h>
 #include <Player.h>
-#include <Enemy.h>
-#include <Boss.h>
-#include <Exception.h>
-#include <Shop.h>
 
 /// CLASA GAMEMANAGER = GAMEPLAY LOOP ///
 class GameManager {
@@ -54,7 +50,7 @@ private:
     void playerTurn();
     void enemyTurn(Character& enemy);
     void useItem() const;
-    bool isStalemate() const; // just trust me
+    [[nodiscard]] bool isStalemate() const; // just trust me
     bool fleeCombat();
 
     //Event handlers
