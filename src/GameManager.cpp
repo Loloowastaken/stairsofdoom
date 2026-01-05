@@ -68,11 +68,10 @@ void GameManager::gameLoop() {
             case 1: exploreFloor(); break;
             case 2: shopPhase(); break;
             case 3: inventoryPhase(); break;
-            case 4: if (enemies.empty() && hasFought==true) { //enemies being empty is a weak condition, we need to have fought them as well
-                handleFloorCompletion();
-            } else {
-                std::cout<<"You must defeat all enemies on this floor before proceeding.\n";
+            case 4: if (!(enemies.empty() && hasFought==true)) { //enemies being empty is a weak condition, we need to have fought them as well
+                throw GameStateException("You must defeat all enemies on this floor before proceeding.\n");
             }
+                handleFloorCompletion();
                 break;
             case 5:
                 std::cout<<"Exiting game.\n"; // removes recursive chain
@@ -110,7 +109,7 @@ void GameManager::exploreFloor() {
     } else {
         // find treasure or nothing
         if (randomChance(50)) {
-            int goldFound = randomInt(10, 50)*currentFloor;
+            const int goldFound = randomInt(10, 50)*currentFloor;
             player->addGold(goldFound);
             goldCollected+=goldFound;
             std::cout<< "You found " << goldFound << " gold!\n";
@@ -199,32 +198,33 @@ void GameManager::playerTurn() {
             }
             int targetChoice;
             std::cin>>targetChoice;
-            if (targetChoice > 0 && (targetChoice <= static_cast<int>(enemies.size()))) {
-                player->attack(*enemies[targetChoice - 1]);
+            if (targetChoice < 1 || targetChoice > static_cast<int>(enemies.size())) {
+                throw InvalidTargetException(targetChoice, static_cast<int>(enemies.size()));
+            }
+            player->attack(*enemies[targetChoice - 1]);
 
-                //Check if the enemy has died
-                if (!enemies[targetChoice - 1]->isAlive()) {
-                    std::cout << enemies[targetChoice-1]->getName() << "was defeated!\n";
-                    enemiesDefeated++;
-                    //Reward
-                    if (const auto* enemy = dynamic_cast<Enemy*>(enemies[targetChoice-1].get())){
-                        const int reward = Enemy::calculateReward(enemy->getType(), enemy->getDiff(), enemy->getLevel());
-                        player->addGold(reward);
-                        goldCollected+=reward;
-                        std::cout<<"You gained " << reward << " gold!\n";
+            //Check if the enemy has died
+            if (!enemies[targetChoice - 1]->isAlive()) {
+                std::cout << enemies[targetChoice-1]->getName() << "was defeated!\n";
+                enemiesDefeated++;
+                //Reward
+                if (const auto* enemy = dynamic_cast<Enemy*>(enemies[targetChoice-1].get())){
+                    const int reward = Enemy::calculateReward(enemy->getType(), enemy->getDiff(), enemy->getLevel());
+                    player->addGold(reward);
+                    goldCollected+=reward;
+                    std::cout<<"You gained " << reward << " gold!\n";
                     }
                 }
             } break;
-        }
         case 2: player->specialAbility(); break;
         case 3: try { useItem(); } catch (const InventoryException &e) { std::cout<<e.what();} break;
         case 4: { // i implemented fleeing on a whim, and it was my worst mistake.
-            if (fleeCombat()) {
-                std::cout<<"You escaped from combat!\n";
-                playerFled=true;
-                break;
+            if (!fleeCombat()) {
+                const int fleeChance = calculateFleeChance();
+                throw FleeFailException(fleeChance);
             }
-            std::cout << "Failed to escape!\n";
+            playerFled = true;
+            std::cout << "Escaped from combat!\n";
         }
         break;
         case 5: {
@@ -254,7 +254,7 @@ void GameManager::enemyTurn(Character &enemy) {
 
     //Check if the player died
     if (!player->isAlive()) {
-        std::cout<<player->getName() << " has been defeated!\n";
+        throw PlayerDeathException();
     }
 }
 
@@ -398,7 +398,7 @@ void GameManager::generateEnemies() {
 void GameManager::handleCombatVictory() {
     std::cout<<"\n=== VICTORY! ===\n";
     //Experience reward
-    int expGained = currentFloor*50;
+    const int expGained = currentFloor*50;
     player->gainExperience(expGained);
     std::cout<<"Gained "<< expGained << " experience!\n";
     if (player->getExp()>=player->getExpToNext()) {
@@ -487,7 +487,7 @@ void GameManager::displayCombatMenu() {
     std::cout<<"5. Analyze\n";
 }
 
-bool GameManager::fleeCombat() {
+int GameManager::calculateFleeChance() const {
     //flee chance: 50% + (player speed - avg enemy speed)
     int fleeChance = 50;
     if (!enemies.empty()) {
@@ -498,9 +498,14 @@ bool GameManager::fleeCombat() {
         const int avgEnemySpeed=static_cast<int>(totalEnemySpeed / enemies.size());
         fleeChance+=(player->getSpeed()-avgEnemySpeed);
     }
-        fleeChance = std::max(10,std::min(90,fleeChance)); // no guarantee, 10-90%
-        return randomChance(fleeChance);
-    }
+    fleeChance = std::max(10,std::min(90,fleeChance)); // no guarantee, 10-90%
+    return fleeChance;
+}
+
+bool GameManager::fleeCombat() {
+    const int fleeChance = calculateFleeChance();
+    return randomChance(fleeChance);
+}
 //Random utilities
 int GameManager::randomInt(const int min, const int max) {
     std::uniform_int_distribution<int> distribution(min, max);

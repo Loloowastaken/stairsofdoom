@@ -1,4 +1,5 @@
 #include "Character.h"
+#include "Exception.h"
 
 int Character::totalCharacters = 0;
 
@@ -7,13 +8,16 @@ Character::Character()
       attackPower(10), defense(5), speed(10) {
     totalCharacters++;
 }
-Character::Character(std::string  name, int level, int health,
-              int attackPower, int defense, int speed)
+Character::Character(std::string name, const int level, const int health,
+              const int attackPower, const int defense, const int speed)
         : name(std::move(name)), level(level), health(health), maxHealth(health),
           attackPower(attackPower), defense(defense), speed(speed) {
+    if (name.empty()) {
+        throw CharacterException("Name cannot be empty.");
+    }
     totalCharacters++;
 }
-Character::Character(const std::string& name, int level)
+Character::Character(const std::string& name, const int level)
         : Character(name, level, 50+level*10, 5+level*2, 2+level, 5+level) {
     totalCharacters++;
 }
@@ -44,17 +48,17 @@ Character& Character::operator+=(const int healAmount) {
     if (health>maxHealth) health=maxHealth;
     return *this;
 }
-Character& Character::operator-=(int damage) {
+Character& Character::operator-=(const int damage) {
     health-=damage;
     if (health<0) health=0;
     return *this;
 }
 void Character::attack(Character& target) {
-    int damage = calculateDamage(target);
+    const int damage = calculateDamage(target);
     std::cout << name << " attacks " << target.getName() << " for " << damage << " damage!\n ";
     target.takeDamage(damage);
 }
-void Character::takeDamage(int damage) {
+void Character::takeDamage(const int damage) {
     health-=damage;
     if (health<0) health=0;
 }
@@ -68,7 +72,7 @@ void Character::displayStatus() const {
 }
 
 int Character::calculateDamage(const Character &target) const {
-    int damage = attackPower - (target.getDefense()/2);
+    const int damage = attackPower - (target.getDefense()/2);
     return (damage < 1) ? 1 : damage;
 }
 std::istream& operator>>(std::istream& is, Character& c) {

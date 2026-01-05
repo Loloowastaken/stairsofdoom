@@ -51,6 +51,7 @@ private:
     void enemyTurn(Character& enemy);
     void useItem() const;
     [[nodiscard]] bool isStalemate() const; // just trust me
+    [[nodiscard]] int calculateFleeChance() const;
     bool fleeCombat();
 
     //Event handlers

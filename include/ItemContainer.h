@@ -9,27 +9,30 @@ class ItemContainer {
 private:
     std::vector<T> items;
     static int totalContainers;
+    int capacity;
     std::string containerName = "Default Container";
 public:
                                                             // CONSTRUCTORI //
     ItemContainer()
     {
+        capacity = 30;
         totalContainers++;
     }
-    explicit ItemContainer(std::string name)
-        : containerName(std::move(name)) {
+    explicit ItemContainer(std::string name, const int capacity)
+        : capacity(capacity), containerName(std::move(name)) {
         totalContainers++;
     }
     //Constructor copy
     ItemContainer(const ItemContainer& other)
         : items(other.items),
-        containerName(other.containerName) {
+        capacity(other.capacity), containerName(other.containerName){
         totalContainers++;
     }
     ItemContainer& operator=(const ItemContainer& other) {
         if (this != &other) {
             containerName = other.containerName;
             items = other.items;
+            capacity = other.capacity;
         }
         return *this;
     }
@@ -50,6 +53,7 @@ public:
         return false;
     }
     [[nodiscard]] size_t getItemCount() const { return items.size(); }
+    [[nodiscard]] int getCapacity() const { return capacity; }
     static int getTotalContainers() { return totalContainers; }
 
     void display() const {
@@ -61,7 +65,7 @@ public:
 
     // Algoritm STL cu lambda
     template<typename P>
-    int countIf(P p) const {
+    int countIf(P p) const { // p for predicate
         return std::count_if(items.begin(), items.end(), p);
     }
 

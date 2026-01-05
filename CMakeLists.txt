@@ -141,7 +141,6 @@ add_executable(${MAIN_EXECUTABLE_NAME} main.cpp ${SOURCES}
         include/Boss.h
         src/Boss.cpp
         include/Exception.h
-        src/Exception.cpp
         include/Shop.h
         src/Shop.cpp
         include/GameManager.h

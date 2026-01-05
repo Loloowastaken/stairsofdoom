@@ -22,13 +22,13 @@
     bool Shop::buyItem(Player& player, const std::string& itemName) {
         const auto it = items.find(itemName);
         if (it == items.end()) {
-            throw InventoryException("Item '" + itemName + "' not found in shop!");
+            throw ItemNotFoundException(itemName);
         }
-        if (int price = it->second; player.spendGold(price)) {
-            player.addItem(itemName);
-            return true;
-        }
-        return false;
+        const int price = it->second;
+        // These will throw InsufficientFundsException and InventoryFullException, respectively
+        player.spendGold(price);
+        player.addItem(itemName);
+        return true;
     }
     void Shop::applyItemEffect(Player& player, const std::string& itemName) {
         if (itemName == "HealthPotion") {

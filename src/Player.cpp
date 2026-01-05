@@ -1,11 +1,12 @@
 #include <limits>
 #include <Player.h>
+#include <Exception.h>
      Player::Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
-          gold(50), experience(0), experienceToNext(100), inventory("Player Inventory"),
+          gold(50), experience(0), experienceToNext(100), inventory("Player Inventory", 30),
           heroicStrikeCooldown(0), shieldBashCooldown(0) {
     }
-    Player::Player(const std::string &name, int level)
+    Player::Player(const std::string &name, const int level)
         : Character(name, level, 80+level*20, 12+level*3, 6+level*2, 12+level),
           gold(level*25), experience(0), experienceToNext(level*100),
           heroicStrikeCooldown(0), shieldBashCooldown(0) {
@@ -65,7 +66,7 @@
 
     }
                                                             // METODE SPECIFICE PLAYER //
-    void Player::gainExperience(int xp) {
+    void Player::gainExperience(const int xp) {
         experience += xp;
         std::cout << "Obtained " << xp << " experience. Total: "
                   << experience << "/" << experienceToNext << std::endl;
@@ -86,40 +87,35 @@
         std::cout << getName() << " leveled up to level " << getLevel() << "!\n";
     }
 
-    void Player::addGold(int amount) {
+    void Player::addGold(const int amount) {
         gold += amount;
         std::cout << "Obtained" << amount << " gold. Total: " << gold << "\n";
     }
 
-    bool Player::spendGold(int amount) {
-        if (gold >= amount) {
-            gold -= amount;
-            std::cout << "Spent " << amount << " gold. Total remaining: " << gold << "\n";
-            return true;
-        }
-        std::cout << "Not enough cash! You need " << amount << ", but you have " << gold << "\n";
-        return false;
+    bool Player::spendGold(const int amount) {
+        if (gold < amount) throw InsufficientFundsException(amount, gold);
+        gold-=amount;
+        return true;
     }
 
     void Player::addItem(const std::string& item) {
+        if (static_cast<int>(inventory.getItemCount()) >= inventory.getCapacity()) throw InventoryFullException(inventory.getCapacity());
         inventory.addItem(item);
         std::cout << "Added " << item << " to inventory\n";
     }
     void Player::removeItem(const std::string& item) {
-         if (inventory.removeItem(item)) {
-             std::cout<<"Removed " << item << " from inventory.\n";
-         } else {
-             std::cout<<"Item not found in inventory.\n";
+         if (!inventory.removeItem(item)) {
+             throw ItemNotFoundException(item);
          }
+         std::cout<<"Removed item " << item << " from inventory.";
      }
-
 bool Player::hasItem(const std::string &itemName) const {
     for (const auto& item:inventory) {
         if (item == itemName) {
             return true;
         }
     }
-         return false;
+         throw ItemNotFoundException(itemName);
 }
 
 void Player::showInventory() const {
@@ -149,7 +145,7 @@ void Player::showInventory() const {
             return;
         }
         std::cout<<name<<" uses SECOND WIND!\n";
-        int healAmount = static_cast<int>(maxHealth*(0.3));
+        const int healAmount = static_cast<int>(maxHealth*(0.3));
         health+=healAmount;
         if (health > maxHealth) health = maxHealth;
         std::cout<<"Healed for " << healAmount << " HP! (Now: " << health << "/" << maxHealth << ")\n";
