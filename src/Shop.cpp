@@ -19,15 +19,22 @@
             std::cout<<" - " << fst << ": " << snd << " gold\n";
         }
     }
-    bool Shop::buyItem(Player& player, const std::string& itemName) {
+bool Shop::buyItem(Player& player, const std::string& itemName) {
         const auto it = items.find(itemName);
         if (it == items.end()) {
-            throw ItemNotFoundException(itemName);
+            std::cout << "Item '" << itemName << "' not found in shop!\n";
+            return false;
         }
         const int price = it->second;
-        // These will throw InsufficientFundsException and InventoryFullException, respectively
-        player.spendGold(price);
-        player.addItem(itemName);
+        if (!player.spendGold(price)) {
+            return false;
+        }
+        if (!player.addItem(itemName)) {
+            //refund
+            player.addGold(price);
+            std::cout << "Cannot add item - inventory might be full!\n";
+            return false;
+        }
         return true;
     }
     void Shop::applyItemEffect(Player& player, const std::string& itemName) {

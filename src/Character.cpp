@@ -12,9 +12,6 @@ Character::Character(std::string name, const int level, const int health,
               const int attackPower, const int defense, const int speed)
         : name(std::move(name)), level(level), health(health), maxHealth(health),
           attackPower(attackPower), defense(defense), speed(speed) {
-    if (name.empty()) {
-        throw CharacterException("Name cannot be empty.");
-    }
     totalCharacters++;
 }
 Character::Character(const std::string& name, const int level)

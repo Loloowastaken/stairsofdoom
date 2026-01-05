@@ -144,7 +144,9 @@ add_executable(${MAIN_EXECUTABLE_NAME} main.cpp ${SOURCES}
         include/Shop.h
         src/Shop.cpp
         include/GameManager.h
-        src/GameManager.cpp)
+        src/GameManager.cpp
+        include/EnemyFactory.h
+        src/EnemyFactory.cpp)
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true

@@ -93,21 +93,26 @@
     }
 
     bool Player::spendGold(const int amount) {
-        if (gold < amount) throw InsufficientFundsException(amount, gold);
+        if (gold < amount) {
+            std::cout<<"Not enough gold. Need " << amount << " gold, but only have " << gold << ".\n";
+        }
         gold-=amount;
         return true;
     }
 
-    void Player::addItem(const std::string& item) {
-        if (static_cast<int>(inventory.getItemCount()) >= inventory.getCapacity()) throw InventoryFullException(inventory.getCapacity());
+    bool Player::addItem(const std::string& item) {
+        if (static_cast<int>(inventory.getItemCount()) >= inventory.getCapacity()) {std::cout<<"Item not found: " << item << "\n"; return false;}
         inventory.addItem(item);
         std::cout << "Added " << item << " to inventory\n";
+        return true;
     }
-    void Player::removeItem(const std::string& item) {
+    bool Player::removeItem(const std::string& item) {
          if (!inventory.removeItem(item)) {
-             throw ItemNotFoundException(item);
+             std::cout<<"Item not found: " << item << "\n";
+             return false;
          }
          std::cout<<"Removed item " << item << " from inventory.";
+         return true;
      }
 bool Player::hasItem(const std::string &itemName) const {
     for (const auto& item:inventory) {
@@ -115,7 +120,7 @@ bool Player::hasItem(const std::string &itemName) const {
             return true;
         }
     }
-         throw ItemNotFoundException(itemName);
+         return false;
 }
 
 void Player::showInventory() const {

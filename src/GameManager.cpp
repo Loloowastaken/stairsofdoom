@@ -5,6 +5,8 @@
 #include <Shop.h>
 #include <iostream>
 
+#include "EnemyFactory.h"
+
 GameManager::GameManager()
     : currentFloor(1), totalFloors(100), gameRunning(true), enemiesDefeated(0),
       goldCollected(0), floorsCleared(0), hasFought(false), playerFled(false), rng(std::random_device{}()) {
@@ -68,11 +70,9 @@ void GameManager::gameLoop() {
             case 1: exploreFloor(); break;
             case 2: shopPhase(); break;
             case 3: inventoryPhase(); break;
-            case 4: if (!(enemies.empty() && hasFought==true)) { //enemies being empty is a weak condition, we need to have fought them as well
-                throw GameStateException("You must defeat all enemies on this floor before proceeding.\n");
-            }
+            case 4: if (enemies.empty() && hasFought==true) { //enemies being empty is a weak condition, we need to have fought them as well
                 handleFloorCompletion();
-                break;
+            } else std::cout<<"You must defeat all enemies on this floor before proceeding.\n"; break;
             case 5:
                 std::cout<<"Exiting game.\n"; // removes recursive chain
                 return;
@@ -198,30 +198,29 @@ void GameManager::playerTurn() {
             }
             int targetChoice;
             std::cin>>targetChoice;
-            if (targetChoice < 1 || targetChoice > static_cast<int>(enemies.size())) {
-                throw InvalidTargetException(targetChoice, static_cast<int>(enemies.size()));
-            }
-            player->attack(*enemies[targetChoice - 1]);
-
-            //Check if the enemy has died
-            if (!enemies[targetChoice - 1]->isAlive()) {
-                std::cout << enemies[targetChoice-1]->getName() << "was defeated!\n";
-                enemiesDefeated++;
-                //Reward
-                if (const auto* enemy = dynamic_cast<Enemy*>(enemies[targetChoice-1].get())){
-                    const int reward = Enemy::calculateReward(enemy->getType(), enemy->getDiff(), enemy->getLevel());
-                    player->addGold(reward);
-                    goldCollected+=reward;
-                    std::cout<<"You gained " << reward << " gold!\n";
+            if (!(targetChoice < 1 || targetChoice > static_cast<int>(enemies.size()))) {
+                player->attack(*enemies[targetChoice - 1]);
+                //Check if the enemy has died
+                if (!enemies[targetChoice - 1]->isAlive()) {
+                    std::cout << enemies[targetChoice-1]->getName() << "was defeated!\n";
+                    enemiesDefeated++;
+                    //Reward
+                    if (const auto* enemy = dynamic_cast<Enemy*>(enemies[targetChoice-1].get())){
+                        const int reward = Enemy::calculateReward(enemy->getType(), enemy->getDiff(), enemy->getLevel());
+                        player->addGold(reward);
+                        goldCollected+=reward;
+                        std::cout<<"You gained " << reward << " gold!\n";
                     }
                 }
-            } break;
+            }
+        } break;
         case 2: player->specialAbility(); break;
         case 3: try { useItem(); } catch (const InventoryException &e) { std::cout<<e.what();} break;
         case 4: { // i implemented fleeing on a whim, and it was my worst mistake.
             if (!fleeCombat()) {
                 const int fleeChance = calculateFleeChance();
-                throw FleeFailException(fleeChance);
+                std::cout<<"You failed to escape! Escape chance: " << fleeChance << "%\n";
+                break;
             }
             playerFled = true;
             std::cout << "Escaped from combat!\n";
@@ -254,7 +253,7 @@ void GameManager::enemyTurn(Character &enemy) {
 
     //Check if the player died
     if (!player->isAlive()) {
-        throw PlayerDeathException();
+        std::cout<<player->getName() << " has been defeated!\n";
     }
 }
 
@@ -331,68 +330,21 @@ void GameManager::useItem() const {
 }
 
 void GameManager::generateEnemies() {
-    int enemyCount = randomInt(1,3); //1-3 enemies
-    for (int i = 0; i < enemyCount; ++i) {
-        Enemy::EnemyType type;
-        int randType = randomInt(0,3);
-        Enemy::Difficulty diff;
-        std::string enemyName;
-        switch (randomInt(0,30)) { // why the fuck did i do this? am i stupid?
-            case 0: enemyName = "Affrath"; break;
-            case 1: enemyName = "Belzagoth"; break;
-            case 2: enemyName = "Charflah"; break;
-            case 3: enemyName = "Dezmaziff"; break;
-            case 4: enemyName = "Egloheim"; break;
-            case 5: enemyName = "Fiffirth"; break;
-            case 6: enemyName = "Gigalomaniak"; break;
-            case 7: enemyName = "Hihihirim"; break;
-            case 8: enemyName = "Innora"; break;
-            case 9: enemyName = "Jajjaggar"; break;
-            case 10: enemyName = "Kilminos"; break;
-            case 11: enemyName = "Lorgrehth"; break;
-            case 12: enemyName = "Momarnonion"; break;
-            case 13: enemyName = "Nonisth"; break;
-            case 14: enemyName = "Offorohoth"; break;
-            case 15: enemyName = "Piplainan"; break;
-            case 16: enemyName = "Quaqua"; break;
-            case 17: enemyName = "Rutabaga"; break;
-            case 18: enemyName = "Stintrith"; break;
-            case 19: enemyName = "Titaniacaragorossh"; break;
-            case 20: enemyName = "Uu"; break;
-            case 21: enemyName = "Vivivviv"; break;
-            case 22: enemyName = "Whaleworrn"; break;
-            case 23: enemyName = "Xaxxaffras"; break;
-            case 24: enemyName = "Yorgaloth"; break;
-            case 25: enemyName = "Zumba"; break;
-            case 26: enemyName = "Lospollos"; break;
-            case 27: enemyName = "Lasplagas"; break;
-            case 28: enemyName = "Deflaunth"; break;
-            case 29: enemyName = "Jim"; break;
-            case 30: enemyName = "Goggorogorogorogogggorogoggorogoroth"; break;
-            default: enemyName = "A"; break;
-        }
-        switch (randType) {
-            case 0: type = Enemy::EnemyType::GOBLIN; break;
-            case 1: type = Enemy::EnemyType::SKELETON; break;
-            case 2: type = Enemy::EnemyType::ORC; break;
-            case 3: type = Enemy::EnemyType::SLIME; break;
-            default: type = Enemy::EnemyType::SKELETON; break;
-        }
-        if (currentFloor<=10) diff = Enemy::Difficulty::EASY;
-        else if (currentFloor<=30) diff = Enemy::Difficulty::MEDIUM;
-        else if (currentFloor<=80) diff = Enemy::Difficulty::HARD;
-        else diff = Enemy::Difficulty::BOSS;
-
-        auto enemy = std::make_unique<Enemy>(enemyName, type, diff, currentFloor);
-        enemy->setDescription();
-        enemies.push_back(std::move(enemy));
-    }
-    //Boss on every 10th floor
+    enemies.clear();
     if (currentFloor%10==0) {
-        auto boss = std::make_unique<Boss>("Floor Guardian", Enemy::EnemyType::ORC, Enemy::Difficulty::BOSS, currentFloor, "Guardian of Floor " + std::to_string(currentFloor));
-        boss->setDescription();
+        std::cout<<"\nBeware...a terrible presence lurks on this floor.\n";
+        auto boss = EnemyFactory::createBoss(currentFloor);
         enemies.push_back(std::move(boss));
+
+        const int minionCount = randomInt(1,2);
+        for (int i=0; i < minionCount; i++) {
+            enemies.push_back(EnemyFactory::createRandomEnemy(currentFloor));
+        }
+    } else {
+        auto newEnemies = EnemyFactory::createEnemyGroup(currentFloor,1,3);
+        enemies=std::move(newEnemies);
     }
+    std::cout<<"Encountered " << enemies.size() << " enemy(ies)!\n";
 }
 
 void GameManager::handleCombatVictory() {

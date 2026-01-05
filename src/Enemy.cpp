@@ -6,7 +6,6 @@
                calculateDefense(type,diff,level),
                 calculateSpeed(type,diff,level)),
           type(type), difficulty(diff), baseReward(calculateReward(type,diff,level)), abilityUsed(false) {
-        setDescription();
     }
     Enemy& Enemy::operator=(const Enemy& other) {
         if (this != &other) {
@@ -138,29 +137,6 @@
             case Difficulty::BOSS: return base*5;
         }
         return base;
-    }
-    void Enemy::setDescription() {
-        switch (type) {
-            case EnemyType::GOBLIN:
-                description = "Cunning and small creature";
-                break;
-            case EnemyType::SKELETON:
-                description = "Undead soldier";
-                break;
-            case EnemyType::ORC:
-                description = "Barbaric and powerful humanoid";
-                break;
-            case EnemyType::SLIME:
-                description = "Gelatinous fiend";
-                break;
-        }
-        // si acum adaugam si dificultatea
-        switch (difficulty) {
-            case Difficulty::EASY: description+= " (Easy)"; break;
-            case Difficulty::MEDIUM: description+= " (Medium)"; break;
-            case Difficulty::HARD: description+= " (Hard)"; break;
-            case Difficulty::BOSS: description+= " (BOSS)"; break;
-        }
     }
     void Enemy::goblinSpecial() {
         std::cout << "TRICK! Goblin increases SPD by 5!\n";
