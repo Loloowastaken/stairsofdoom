@@ -22,19 +22,11 @@
 bool Shop::buyItem(Player& player, const std::string& itemName) {
         const auto it = items.find(itemName);
         if (it == items.end()) {
-            std::cout << "Item '" << itemName << "' not found in shop!\n";
-            return false;
+            throw ItemNotFoundException(itemName);
         }
         const int price = it->second;
-        if (!player.spendGold(price)) {
-            return false;
-        }
-        if (!player.addItem(itemName)) {
-            //refund
-            player.addGold(price);
-            std::cout << "Cannot add item - inventory might be full!\n";
-            return false;
-        }
+        player.spendGold(price);
+        player.addItem(itemName);
         return true;
     }
     void Shop::applyItemEffect(Player& player, const std::string& itemName) {
@@ -55,9 +47,5 @@ bool Shop::buyItem(Player& player, const std::string& itemName) {
             player.setSpeed(player.getSpeed()+3);
             std::cout<<"Gained 3 SPD!\n";
         }
-        else {
-            std::cout<<"Invalid item name!\n";
-        }
-        //Eventual alte efecte
     }
 Shop* Shop::instance = nullptr;

@@ -31,9 +31,9 @@ public:
     void gainExperience(int xp);
     void levelUp();
     void addGold(int amount);
-    bool spendGold(int amount);
-    bool addItem(const std::string& item);
-    bool removeItem(const std::string& item);
+    void spendGold(int amount);
+    void addItem(const std::string& item);
+    void removeItem(const std::string& item);
     void showInventory() const;
 
     [[nodiscard]] bool hasItem(const std::string & string) const;

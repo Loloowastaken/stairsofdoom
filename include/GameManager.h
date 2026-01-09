@@ -37,8 +37,8 @@ private:
     void generateEnemies();
     void displayFloorInfo() const;
     void displayPlayerStatus() const;
+    void displayCombatMenu() const;
 
-    static void displayCombatMenu();
     void processPlayerDeath();
     void exploreFloor();
 

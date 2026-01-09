@@ -3,7 +3,7 @@
 #include <Exception.h>
      Player::Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
-          gold(50), experience(0), experienceToNext(100), inventory("Player Inventory", 30),
+          gold(50), experience(0), experienceToNext(100), inventory("Player Inventory", 8), // <- change to test inventory capacity error
           heroicStrikeCooldown(0), shieldBashCooldown(0) {
     }
     Player::Player(const std::string &name, const int level)
@@ -92,27 +92,23 @@
         std::cout << "Obtained " << amount << " gold. Total: " << gold << "\n";
     }
 
-    bool Player::spendGold(const int amount) {
+    void Player::spendGold(const int amount) {
         if (gold < amount) {
-            std::cout<<"Not enough gold. Need " << amount << " gold, but only have " << gold << ".\n";
+            throw InsufficientFundsException(amount,gold);
         }
         gold-=amount;
-        return true;
     }
 
-    bool Player::addItem(const std::string& item) {
-        if (static_cast<int>(inventory.getItemCount()) >= inventory.getCapacity()) {std::cout<<"Item not found: " << item << "\n"; return false;}
+    void Player::addItem(const std::string& item) {
+        if (static_cast<int>(inventory.getItemCount()) >= inventory.getCapacity()) {throw InventoryFullException(inventory.getCapacity());}
         inventory.addItem(item);
         std::cout << "Added " << item << " to inventory\n";
-        return true;
     }
-    bool Player::removeItem(const std::string& item) {
+    void Player::removeItem(const std::string& item) {
          if (!inventory.removeItem(item)) {
-             std::cout<<"Item not found: " << item << "\n";
-             return false;
+             throw ItemNotFoundException(item);
          }
          std::cout<<"Removed item " << item << " from inventory.";
-         return true;
      }
 bool Player::hasItem(const std::string &itemName) const {
     for (const auto& item:inventory) {

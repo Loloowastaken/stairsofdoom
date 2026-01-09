@@ -20,13 +20,12 @@ void GameManager::startGame() {
 }
 void GameManager::mainMenu() {
     int choice=0;
-    while (choice!=2) {
-        std::cout << "\n===== MAIN MENU =====\n";
-        std::cout << "\n1. Start Game (1)\n";
-        std::cout << "\n2. End Game (2)\n";
-        std::cin >> choice;
-        switch (choice) {
-            case 1: {
+    std::cout << "\n===== MAIN MENU =====\n";
+    std::cout << "\n1. Start Game (1)\n";
+    std::cout << "\n2. End Game (2)\n";
+    std::cin >> choice;
+    switch (choice) {
+        case 1: {
                 player=std::make_unique<Player>("");
                 std::cin>>*player;
                 std::cout << "\nBeginning journey for " << player->getName() << ".\n";
@@ -44,16 +43,14 @@ void GameManager::mainMenu() {
                 return;
             }
             default:
-                std::cout<<"Invalid choice.\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                break;
+                throw GameStateException("Invalid menu choice. Interpreting as exit.");
         }
     }
-}
 void GameManager::gameLoop() {
     std::cout << "\n=== ADVENTURE START ===\n";
-    while (gameRunning && player && player->isAlive()) {
+    try
+        {
+        while (gameRunning && player && player->isAlive()) {
         displayFloorInfo();
         int choice = 0;
         std::cout<<"\nWhat would you like to do on this floor?\n";
@@ -63,28 +60,32 @@ void GameManager::gameLoop() {
         std::cout<<"4. Advance to next floor\n";
         std::cout<<"5. Exit game\n";
         std::cout<<"Choice: ";
-        std::cin>>choice;
+        if (!(std::cin>>choice)) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            throw GameStateException("Invalid input - expected a number. Interpreting choice as exit.\n");
+        }
         switch (choice) {
             case 1: exploreFloor(); break;
             case 2: shopPhase(); break;
             case 3: inventoryPhase(); break;
-            case 4: if (enemies.empty() && hasFought==true) { //enemies being empty is a weak condition, we need to have fought them as well
-                handleFloorCompletion();
-            } else std::cout<<"You must defeat all enemies on this floor before proceeding.\n"; break;
+            case 4: try {
+                if (enemies.empty() && hasFought==true) { //enemies being empty is a weak condition, we need to have fought them as well
+                    handleFloorCompletion();
+                } else std::cout<<"You must defeat all enemies on this floor before proceeding.\n";
+            } catch (const CombatException&e) {
+                std::cout<<e.what()<<std::endl;
+            } break;
             case 5:
                 std::cout<<"Exiting game.\n"; // removes recursive chain
                 return;
             default:
-                std::cout<<"Invalid choice!\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                break;
+                throw GameStateException("Interpreting choice as exit.\n");
         }
 
         //Check for gameover
         if (!player->isAlive()) {
-            processPlayerDeath();
-            return;
+            throw PlayerDeathException();
         }
 
         //Check for victory
@@ -92,6 +93,14 @@ void GameManager::gameLoop() {
             handleVictory();
             return;
         }
+    }
+    } catch (const PlayerDeathException& e) {
+        std::cout<< "\n!!!" << e.what() << " !!!\n"; processPlayerDeath();
+    } catch (const GameStateException& e) {
+        std::cout<< e.what() << std::endl;
+    } catch (const std::exception& e) { //this probably shouldnt happen
+        std::cout<< "\nUnexpected error: " << e.what() << std::endl;
+        gameRunning=false;
     }
 }
 
@@ -112,8 +121,17 @@ void GameManager::exploreFloor() {
             goldCollected+=goldFound;
             std::cout<< "You found " << goldFound << " gold!\n";
         } else if (randomChance(30)) {
-            std::cout<<"You found a Health Potion!\n";
-            player->addItem("HealthPotion");
+            switch (randomInt(1,4)) {
+                case 1: std::cout<<"Found a health potion!\n";
+                    player->addItem("HealthPotion"); break;
+                case 2: std::cout<<"Found an attack potion!\n";
+                    player->addItem("AttackPotion"); break;
+                case 3: std::cout<<"Found a defense potion!\n";
+                    player->addItem("DefensePotion"); break;
+                case 4: std::cout<<"Found a speed potion!\n";
+                    player->addItem("SpeedPotion"); break;
+                default: std::cout<<"Found...nothing?\n"; break;
+            }
         } else {
             std::cout<<"The floor is empty...for now...\n";
         }
@@ -183,20 +201,26 @@ bool GameManager::isStalemate() const {
 }
 
 void GameManager::playerTurn() {
-    displayCombatMenu();
-    int choice = 0;
-    std::cin>>choice;
-    switch (choice) {
-        case 1: {
-            if (enemies.empty()) return;
-            std::cout<<"\n Choose target:\n";
-            for (size_t i = 0; i < enemies.size(); ++i) {
-                std::cout << (i+1) << ". " << enemies[i]->getName() << " (" << enemies[i]->getHealth()
-                << "/" << enemies[i]->getMaxHealth() << " HP)\n";
-            }
-            int targetChoice;
-            std::cin>>targetChoice;
-            if (!(targetChoice < 1 || targetChoice > static_cast<int>(enemies.size()))) {
+    try{displayCombatMenu();
+        int choice = 0;
+        std::cin>>choice;
+        switch (choice) {
+            case 1: {
+                if (enemies.empty()) return;
+                std::cout<<"\n Choose target:\n";
+                for (size_t i = 0; i < enemies.size(); ++i) {
+                    std::cout << (i+1) << ". " << enemies[i]->getName() << " (" << enemies[i]->getHealth()
+                    << "/" << enemies[i]->getMaxHealth() << " HP)\n";
+                }
+                int targetChoice;
+                if (!(std::cin>>targetChoice)) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    throw GameStateException("Invalid target selection input");
+                }
+                if (targetChoice < 1 || targetChoice > static_cast<int>(enemies.size())) {
+                    throw InvalidTargetException(targetChoice, static_cast<int>(enemies.size()));
+                }
                 player->attack(*enemies[targetChoice - 1]);
                 //Check if the enemy has died
                 if (!enemies[targetChoice - 1]->isAlive()) {
@@ -210,33 +234,44 @@ void GameManager::playerTurn() {
                         std::cout<<"You gained " << reward << " gold!\n";
                     }
                 }
-            }
-        } break;
-        case 2: player->specialAbility(); break;
-        case 3: try { useItem(); } catch (const InventoryException &e) { std::cout<<e.what();} break;
-        case 4: { // i implemented fleeing on a whim, and it was my worst mistake.
-            if (!fleeCombat()) {
-                const int fleeChance = calculateFleeChance();
-                std::cout<<"You failed to escape! Escape chance: " << fleeChance << "%\n";
-                break;
-            }
-            playerFled = true;
-            std::cout << "Escaped from combat!\n";
-        }
-        break;
-        case 5: {
-            std::cout<<"Analyzing enemies...\n";
-            for (const auto & enemie : enemies) {
-                if (const auto* enemy = dynamic_cast<const Enemy *>(enemie.get())) {
-                    std::cout<<enemy->getDescription();
+            } break;
+            case 2: try {player->specialAbility();}
+                catch (const CombatException&e) {
+                    std::cout<< "Cannot use special ability: " << e.what() << std::endl;
+                } break;
+            case 3: try { useItem(); } catch (const InventoryException &e) { std::cout<<e.what();}
+                catch (const GameStateException &e) {
+                    std::cout<<e.what();
+                } break;
+            case 4: { // i implemented fleeing on a whim, and it was my worst mistake.
+                if (!fleeCombat()) {
+                    const int fleeChance = calculateFleeChance();
+                    throw FleeFailException(fleeChance);
                 }
+                playerFled = true;
+                std::cout << "Escaped from combat!\n";
             }
-        } break;
-        default:
-            std::cout<<"Invalid action!\n";
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            break;
+                break;
+            case 5: {
+                std::cout<<"Analyzing enemies...\n";
+                for (const auto & enemie : enemies) {
+                    if (const auto* enemy = dynamic_cast<const Enemy *>(enemie.get())) {
+                        std::cout<<enemy->getDescription();
+                    }
+                }
+            } break;
+            default:
+                std::cout<<"Invalid action!\n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                break;
+        }
+    } catch (const InvalidTargetException& e) {
+        std::cout<<e.what()<<std::endl;
+    } catch (const FleeFailException& e) {
+        std::cout<<e.what()<<std::endl;
+    } catch (const GameStateException& e) {
+        std::cout<<e.what()<<std::endl;
     }
 }
 
@@ -269,7 +304,6 @@ void GameManager::shopPhase() const {
         std::cout<<"\n2. Leave shop \n";
         std::cout<<"Choice: ";
         std::cin>>choice;
-
         if (choice==1) {
             std::cout<< "Enter item name (or 'list' to see items, or 'exit' to exit item display): ";
             std::string itemName;
@@ -284,8 +318,14 @@ void GameManager::shopPhase() const {
                     if (shop.buyItem(*player, itemName)) {
                         std::cout<<"???: Hehehe! Thank ye!\n";
                     }
+                } catch (const ItemNotFoundException& e) {
+                    std::cout << e.what() << std::endl;
+                } catch (const InsufficientFundsException& e) {
+                    std::cout << e.what() << std::endl;
+                } catch (const InventoryFullException& e) {
+                    std::cout << e.what() << std::endl;
                 } catch (const InventoryException& e) {
-                    std::cout<< e.what() << std::endl;
+                    std::cout << e.what() << std::endl;
                 }
             }
         } else {
@@ -297,33 +337,45 @@ void GameManager::shopPhase() const {
     }
 }
 void GameManager::inventoryPhase() const {
-    player->showInventory();
-    int choice = 0;
-    while (choice!=2) {
-        std::cout<<"\n1. Use item \n";
-        std::cout<<"\n2. Close inventory \n";
-        std::cout<<"Choice: ";
-        std::cin>>choice;
-        if (choice==1) {
-           try{ useItem(); } catch (const InventoryException &e) { std::cout<<e.what() ;}
+    try{player->showInventory();
+        int choice = 0;
+        while (choice!=2) {
+            std::cout<<"\n1. Use item \n";
+            std::cout<<"\n2. Close inventory \n";
+            std::cout<<"Choice: ";
+            if (!(std::cin>>choice)) {
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                throw GameStateException("Invalid choice! Expected a number");
+            }
+            if (choice==1) {
+                try{ useItem(); } catch (const ItemNotFoundException& e) {
+                    std::cout << e.what() << std::endl;
+                } catch (const InventoryException& e) {
+                    std::cout << e.what() << std::endl;
+                } catch (const std::exception& e) {
+                    std::cout << e.what() << std::endl;
+                }
+            }
+            else break;
         }
-        else break;
+    } catch (const GameStateException& e) {
+        std::cout<< e.what() << std::endl;
     }
 }
 void GameManager::useItem() const {
     //Very simplified, adding more items later maybe, project is alrd complicated enough lol
     std::cout<<"Enter item name to use: ";
-    std::string itemName;
-    std::cin>>itemName;
-    if (!player->hasItem(itemName)) {
-        std::cout << "You don't have '" << itemName << "' in your inventory!\n";
-        return;
-    }
     try {
+        std::string itemName;
+        std::cin>>itemName;
+    if (!player->hasItem(itemName)) {
+        throw ItemNotFoundException(itemName);
+    }
         Shop::applyItemEffect(*player,itemName);
         player->removeItem(itemName);
-    } catch (InventoryException &e ) {
-        std::cout<<e.what()<<std::endl;
+    } catch (const std::exception& e) {
+        throw InventoryException(std::string(e.what()));
     }
 }
 
@@ -436,13 +488,14 @@ void GameManager::displayPlayerStatus() const {
     }
 }
 
-void GameManager::displayCombatMenu() {
+void GameManager::displayCombatMenu() const {
+    const int fleeChance = calculateFleeChance();
     std::cout<< "\n=== YOUR TURN ===\n";
-    std::cout<<"Choose your action: ";
+    std::cout<<"Choose your action: \n";
     std::cout<<"1. Attack\n";
     std::cout<<"2. Special ability\n";
     std::cout<<"3. Use item\n";
-    std::cout<<"4. Flee\n";
+    std::cout<<"4. Flee ("<<fleeChance<<"% chance)\n";
     std::cout<<"5. Analyze\n";
 }
 
