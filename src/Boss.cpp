@@ -1,5 +1,5 @@
 #include <Boss.h>
-    Boss::Boss(const std::string& name, EnemyType type, Difficulty diff, int level,
+    Boss::Boss(const std::string& name, const EnemyType type, const Difficulty diff, const int level,
          std::string title)
         : Enemy(name, type, diff, level),  // apeleaza constructorul 'Enemy'
           title(std::move(title)), hasSpecialPhase(false),
@@ -22,7 +22,7 @@
     Boss::~Boss() {
         std::cout << "Boss " << getName() << " destroyed\n";
     }
-    void Boss::takeDamage(int damage)  {
+    void Boss::takeDamage(const int damage)  {
         Character::takeDamage(damage);
         turnCounter++;
         //vf daca suntem in faza speciala
@@ -52,11 +52,4 @@
         std::cout << title << " " << getName() << " is enraged!\n";
         attackPower*=2;
         speed*=2;
-    }
-    void Boss::displayBossInfo() const {
-        displayStatus();
-        std::cout<< " - " << title << "\n";
-        if (hasSpecialPhase) {
-            std::cout<<" (ENRAGED)\n";
-        }
     }

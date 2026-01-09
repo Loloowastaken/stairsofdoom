@@ -27,11 +27,9 @@ void GameManager::mainMenu() {
         std::cin >> choice;
         switch (choice) {
             case 1: {
-                std::string playerName;
-                std::cout << "Enter player name: ";
-                std::cin>>playerName;
-                player=std::make_unique<Player>(playerName);
-                std::cout << "Beginning journey for " << player->getName() << ".\n";
+                player=std::make_unique<Player>("");
+                std::cin>>*player;
+                std::cout << "\nBeginning journey for " << player->getName() << ".\n";
                 std::cout << "Your journey begins on Floor 1.\n";
                 //Give out some starting items
                 player->addItem("HealthPotion");
@@ -137,8 +135,8 @@ void GameManager::combatPhase() {
     //Combat loop
     while (!enemies.empty() && player->isAlive()) {
         if (playerFled==true) {break;}
-        for (const auto*character : turnOrder) {
-            if (character->isAlive()) character->displayStatus();
+        for (const auto character : turnOrder) {
+            if (character->isAlive()) std::cout << *character ;
         }
         for (auto* character : turnOrder) {
             if (!character->isAlive()) continue;
@@ -162,7 +160,7 @@ void GameManager::combatPhase() {
 
         //Check for victory
         if (player->isAlive() && enemies.empty()) {
-            handleCombatVictory();
+            handleCombatVictory(); break;
         }
         //Check for stalemate (enemy does <=3 ATK, player obviously wins, but it takes centuries)
         if (isStalemate()) {
@@ -176,7 +174,7 @@ void GameManager::combatPhase() {
 bool GameManager::isStalemate() const {
     bool allEnemiesWeak=true;
     for (const auto&enemy:enemies) {
-        if (const int enemyDamage=enemy->getAttackPower() - (player->getDefense()/2); enemyDamage>=4) {
+        if (const int enemyDamage=enemy->getAttackPower() - (player->getDefense()/2); enemyDamage>=3) {
             allEnemiesWeak=false;
             break;
         }
@@ -230,7 +228,7 @@ void GameManager::playerTurn() {
             std::cout<<"Analyzing enemies...\n";
             for (const auto & enemie : enemies) {
                 if (const auto* enemy = dynamic_cast<const Enemy *>(enemie.get())) {
-                    std::cout<<enemie->getName()<<" "<<enemy->getDescription();
+                    std::cout<<enemy->getDescription();
                 }
             }
         } break;
@@ -358,8 +356,17 @@ void GameManager::handleCombatVictory() {
     }
     if (randomChance(30)) {
         //item drop
-        std::cout<<"Found a health potion!\n"; // again might restructure if adding more items
-        player->addItem("HealthPotion");
+        switch (randomInt(1,4)) {
+            case 1: std::cout<<"Found a health potion!\n";
+                player->addItem("HealthPotion"); break;
+            case 2: std::cout<<"Found an attack potion!\n";
+                player->addItem("AttackPotion"); break;
+            case 3: std::cout<<"Found a defense potion!\n";
+                player->addItem("DefensePotion"); break;
+            case 4: std::cout<<"Found a speed potion!\n";
+                player->addItem("SpeedPotion"); break;
+            default: std::cout<<"Found...nothing?\n"; break;
+        }
     }
 }
 
@@ -424,7 +431,7 @@ void GameManager::displayFloorInfo() const {
 
 void GameManager::displayPlayerStatus() const {
     if (player) {
-        player->displayStatus();
+        std::cout<<*player;
         std::cout << "Gold: " << player->getGold() << "\n";
     }
 }

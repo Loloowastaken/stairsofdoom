@@ -45,36 +45,36 @@ std::string EnemyFactory::generateDescription(const Enemy::EnemyType type, const
     //Varied description for type
     switch(type) {
         case Enemy::EnemyType::GOBLIN:
-            description = "A sneaky goblin named " + name + ".";
+            description = "A sneaky goblin named " + name + ". ";
             break;
         case Enemy::EnemyType::SKELETON:
-            description = "A sturdy looking skeleton called " + name + ".";
+            description = "A sturdy looking skeleton called " + name + ". ";
             break;
         case Enemy::EnemyType::ORC:
-            description = "A brutish orc known as " + name + ".";
+            description = "A brutish orc known as " + name + ". ";
             break;
         case Enemy::EnemyType::SLIME:
-            description = "A gelatinous slime named " + name + ".";
+            description = "A gelatinous slime named " + name + ". ";
             break;
     }
 
     //Varied description for difficulty
     switch(diff) {
         case Enemy::Difficulty::EASY:
-            description += "Looks inexperienced and nervous.";
+            description += "Looks inexperienced and nervous. ";
             break;
         case Enemy::Difficulty::MEDIUM:
-            description += "Seems confident and experienced.";
+            description += "Seems confident and experienced. ";
             break;
         case Enemy::Difficulty::HARD:
-            description += "Appears bloodthirsty and dangerous.";
+            description += "Appears bloodthirsty and dangerous. ";
             break;
         case Enemy::Difficulty::BOSS:
-            description += "The pinnacle of might.";
+            description += "The pinnacle of might. ";
             break;
     }
     // Add level info
-    description += " [Level " + std::to_string(level) + "]";
+    description += " [Level " + std::to_string(level) + "]\n";
     return description;
 }
 

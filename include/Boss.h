@@ -29,5 +29,5 @@ public:
     // GETTERI //
     [[nodiscard]] const std::string& getTitle() const { return title; }
     [[nodiscard]] bool isInSpecialPhase() const { return hasSpecialPhase; }
-    void displayBossInfo() const;
+    void displayBossInfo(const Character &b) const;
 };

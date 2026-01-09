@@ -33,6 +33,13 @@ public:
 
     //Operator membru -=, folosit pt damage
     Character& operator-=(int damage);
+
+    //Operator output
+    friend std::ostream& operator<<(std::ostream& os, Character& c);
+
+    //Operator input
+    friend std::istream& operator>>(std::istream& is, Character& c);
+
                                                             // METODE VIRTUALE //
 
     //metoda pentru atac
@@ -62,7 +69,6 @@ public:
     void setDefense(int setdefense) { this->defense = setdefense; }
     void setSpeed(int setspeed) { this->speed = setspeed; }
                                                             // ALTE METODE //
-    void displayStatus() const;
     [[nodiscard]] bool isAlive() const { return health > 0; }
     //Metoda statica
     static int getTotalCharacters() { return totalCharacters; };
@@ -71,10 +77,6 @@ public:
 };
 
 // OPERATORI NON-MEMBRI //
-//Operator output
-std::ostream& operator<<(std::ostream& os, const Character& c);
-//Operator input
-std::istream& operator>>(std::istream& is, Character& c);
 //Operator <, folosit pentru a determina cine face prima miscare, bazata pe speed
 bool operator<(const Character& c1, const Character& c2);
 //Operator ==, folosit pentru a verifica daca sunt acelasi nivel/putere

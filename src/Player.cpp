@@ -89,7 +89,7 @@
 
     void Player::addGold(const int amount) {
         gold += amount;
-        std::cout << "Obtained" << amount << " gold. Total: " << gold << "\n";
+        std::cout << "Obtained " << amount << " gold. Total: " << gold << "\n";
     }
 
     bool Player::spendGold(const int amount) {

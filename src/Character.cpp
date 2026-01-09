@@ -60,14 +60,6 @@ void Character::takeDamage(const int damage) {
     if (health<0) health=0;
 }
 Character::~Character()= default;
-void Character::displayStatus() const {
-    std::cout << name << " [LVL " << level << "] "
-              << "HP: " << health << "/" << maxHealth
-              << " ATK: " << attackPower
-              << " DEF: " << defense
-              << " SPD: " << speed << std::endl;
-}
-
 int Character::calculateDamage(const Character &target) const {
     const int damage = attackPower - (target.getDefense()/2);
     return (damage < 1) ? 1 : damage;
@@ -78,6 +70,14 @@ std::istream& operator>>(std::istream& is, Character& c) {
     is >> inputName;
     c.setName(inputName);
     return is;
+}
+std::ostream& operator<<(std::ostream& os, Character& c) {
+    os << c.getName() << " [LVL " << c.getLevel() << "] "
+              << "HP: " << c.getHealth() << "/" << c.getMaxHealth()
+              << " ATK: " << c.getAttackPower()
+              << " DEF: " << c.getDefense()
+              << " SPD: " << c.getSpeed() << std::endl;
+    return os;
 }
 bool operator<(const Character& c1, const Character& c2) {
     return c1.getSpeed() < c2.getSpeed();
