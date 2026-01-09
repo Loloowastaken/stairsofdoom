@@ -237,7 +237,7 @@ void GameManager::playerTurn() {
             } break;
             case 2: try {player->specialAbility();}
                 catch (const CombatException&e) {
-                    std::cout<< "Cannot use special ability: " << e.what() << std::endl;
+                    std::cout<< e.what() << std::endl;
                 } break;
             case 3: try { useItem(); } catch (const InventoryException &e) { std::cout<<e.what();}
                 catch (const GameStateException &e) {

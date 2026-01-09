@@ -125,16 +125,14 @@ void Player::showInventory() const {
     }
     bool Player::heroicStrike() {
         if (heroicStrikeCooldown > 0) {
-            std::cout<<"Heroic Strike is on cooldown for " << heroicStrikeCooldown << " more turns!\n";
-            return false;
+            throw AbilityException("Heroic Strike");
         }
         heroicStrikeCooldown=3;
         return true;
     }
     bool Player::shieldBash() {
         if (shieldBashCooldown > 0) {
-            std::cout<<"Shield Bash is on cooldown for " << shieldBashCooldown << "more turns!\n";
-            return false;
+            throw AbilityException("Shield Bash");
         }
         shieldBashCooldown=4;
         return true;
@@ -142,8 +140,7 @@ void Player::showInventory() const {
     void Player::secondWind() {
         static int usesRemaining = 2;
         if (usesRemaining <= 0) {
-            std::cout << "You're too exhausted to use Second Wind again!\n";
-            return;
+            throw AbilityException("Second Wind");
         }
         std::cout<<name<<" uses SECOND WIND!\n";
         const int healAmount = static_cast<int>(maxHealth*(0.3));

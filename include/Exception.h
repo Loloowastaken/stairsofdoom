@@ -20,6 +20,12 @@ public:
     explicit CombatException(std::string msg) : Exception("[COMBAT] "+std::move(msg)) {}
 };
 
+class AbilityException : public CombatException {
+public:
+    explicit AbilityException(const std::string& abilityName)
+        : CombatException("Cannot use special ability: " + abilityName) {}
+};
+
 class InvalidTargetException : public CombatException {
 public:
     InvalidTargetException(const int targetIndex, const int maxTargets)
