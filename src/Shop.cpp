@@ -1,11 +1,21 @@
 #include <Shop.h>
 #include <Exception.h>
-    Shop::Shop() {
-        //Initializam cateva iteme
-        items["HealthPotion"] = 50;
-        items["AttackBoost"] = 100;
-        items["DefenseBoost"] = 100;
-        items["SpeedBoost"] = 75;
+#include <iostream>
+    Shop::Shop()
+        : availableItems("Shop Inventory", 100),
+          itemStock("Limited Stock", 20) {
+        availableItems.addItem("HealthPotion");
+        availableItems.addItem("AttackBoost");
+        availableItems.addItem("DefenseBoost");
+        availableItems.addItem("SpeedBoost");
+
+        itemPrices["HealthPotion"] = 50;
+        itemPrices["AttackBoost"] = 100;
+        itemPrices["DefenseBoost"] = 100;
+        itemPrices["SpeedBoost"] = 75;
+
+        itemStock.addItem({"FullHeal",3}); // limited amount
+        itemPrices["FullHeal"] = 200;
     }
     Shop& Shop::getInstance() {
         if (instance == nullptr) {
@@ -15,19 +25,50 @@
     }
     void Shop::displayItems() const {
         std::cout<<"\n=== SHOP ===\n";
-        for (const auto&[fst, snd] : items) {
-            std::cout<<" - " << fst << ": " << snd << " gold\n";
+        for (const auto& itemName : availableItems) {
+            if (auto it = itemPrices.find(itemName); it != itemPrices.end()) {
+                std::cout<< " - " << itemName << ": " << it->second << " gold\n";
+            }
         }
+        //check for limited stock (fullheals)
+        if (itemStock.getItemCount() > 0) {
+            std::cout << "\n=== LIMITED STOCK ===\n";
+            for (const auto& [itemName, quantity] : itemStock) {
+                if (auto priceIt = itemPrices.find(itemName); priceIt != itemPrices.end()) {
+                    std::cout << " - " << itemName << ": " << priceIt->second;
+                    if (quantity>0) std::cout<<" (Only " << quantity << " left!)\n";
+                    else std::cout<< " (OUT OF STOCK)\n";
+                }
+            }
+        }
+        std::cout << "================\n";
     }
-bool Shop::buyItem(Player& player, const std::string& itemName) {
-        const auto it = items.find(itemName);
-        if (it == items.end()) {
+void Shop::buyItem(Player& player, const std::string& itemName) {
+        bool isPurchased = false;
+        const auto it = itemPrices.find(itemName);
+        if (it == itemPrices.end()) {
             throw ItemNotFoundException(itemName);
         }
         const int price = it->second;
-        player.spendGold(price);
-        player.addItem(itemName);
-        return true;
+        //check if fullheal
+        for (auto& [limitedItem, quantity] : itemStock) {
+            if (limitedItem == itemName) {
+                if (quantity <= 0) {
+                    throw InventoryException(itemName + " is out of stock!");
+                }
+                player.spendGold(price);
+                player.addItem(itemName);
+                quantity--;  // decrease stock
+                isPurchased=true;
+
+                if (quantity<=0) itemStock.removeItem({itemName,0});
+            }
+        }
+        if (!isPurchased) {
+            player.spendGold(price);
+            player.addItem(itemName);
+            std::cout << "Purchased " << itemName << " for " << price << " gold!\n";
+        }
     }
     void Shop::applyItemEffect(Player& player, const std::string& itemName) {
         if (itemName == "HealthPotion") {
@@ -47,5 +88,13 @@ bool Shop::buyItem(Player& player, const std::string& itemName) {
             player.setSpeed(player.getSpeed()+3);
             std::cout<<"Gained 3 SPD!\n";
         }
+        else if (itemName == "FullHeal") {
+            player.setHealth(player.getMaxHealth());
+            std::cout<<"Healed to full HP!\n";
+        }
+    }
+    void Shop::addLimitedItem(const std::string& itemName, const int price, int quantity) {
+        itemStock.addItem({itemName, quantity});
+        itemPrices[itemName] = price;
     }
 Shop* Shop::instance = nullptr;

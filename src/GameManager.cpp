@@ -33,7 +33,7 @@ void GameManager::mainMenu() {
                 //Give out some starting items
                 player->addItem("HealthPotion");
                 player->addItem("HealthPotion");
-                player->addGold(100);
+                player->addGold(1000);
                 gameLoop();
                 return;
             }
@@ -312,9 +312,8 @@ void GameManager::shopPhase() const {
                 return;
             } else {
                 try {
-                    if (shop.buyItem(*player, itemName)) {
-                        std::cout<<"???: Hehehe! Thank ye!\n";
-                    }
+                    shop.buyItem(*player, itemName);
+                    std::cout<<"???: Hehehe! Thank ye!\n";
                 } catch (const ItemNotFoundException& e) {
                     std::cout << e.what() << std::endl;
                 } catch (const InsufficientFundsException& e) {
@@ -435,6 +434,10 @@ void GameManager::handleFloorCompletion() {
         if (randomChance(25)) {
             std::cout<<"You feel stronger!\n";
             player->levelUp();
+        }
+        //restock 3 full heals on every 5th floor
+        if (currentFloor%5==0) {
+            Shop::getInstance().addLimitedItem("FullHeal",200,3);
         }
     }
 }
