@@ -397,6 +397,7 @@ void GameManager::handleCombatVictory() {
     //Experience reward
     const int expGained = currentFloor*50;
     player->gainExperience(expGained);
+    player->setUsesRemaining(2);
     std::cout<<"Gained "<< expGained << " experience!\n";
     if (player->getExp()>=player->getExpToNext()) {
         handleLevelUp();

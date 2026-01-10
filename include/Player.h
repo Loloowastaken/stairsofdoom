@@ -52,4 +52,5 @@ public:
     [[nodiscard]] int getExpToNext() const { return experienceToNext; }
     void setGold(const int setgold) { gold = setgold; }
     void setExp(const int setexp) { experience = setexp; }
+    void setUsesRemaining(const int setuses) { secondWindUses = setuses; }
 };
