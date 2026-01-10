@@ -45,16 +45,16 @@ std::string EnemyFactory::generateDescription(const Enemy::EnemyType type, const
     //Varied description for type
     switch(type) {
         case Enemy::EnemyType::GOBLIN:
-            description = "A sneaky goblin named " + name + ". ";
+            description = "A goblin named " + name + ". ";
             break;
         case Enemy::EnemyType::SKELETON:
-            description = "A sturdy looking skeleton called " + name + ". ";
+            description = "A skeleton named " + name + ". ";
             break;
         case Enemy::EnemyType::ORC:
-            description = "A brutish orc known as " + name + ". ";
+            description = "An orc known named " + name + ". ";
             break;
         case Enemy::EnemyType::SLIME:
-            description = "A gelatinous slime named " + name + ". ";
+            description = "A slime named " + name + ". ";
             break;
     }
 
@@ -64,10 +64,10 @@ std::string EnemyFactory::generateDescription(const Enemy::EnemyType type, const
             description += "Looks inexperienced and nervous. ";
             break;
         case Enemy::Difficulty::MEDIUM:
-            description += "Seems confident and experienced. ";
+            description += "Looks confident and experienced. ";
             break;
         case Enemy::Difficulty::HARD:
-            description += "Appears bloodthirsty and dangerous. ";
+            description += "Looks bloodthirsty and dangerous. ";
             break;
         case Enemy::Difficulty::BOSS:
             description += "The pinnacle of might. ";

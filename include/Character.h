@@ -11,7 +11,6 @@ protected:
     int attackPower;
     int defense;
     int speed;
-    static int totalCharacters;
 public:
                                                     // CONSTRUCTORI //
 
@@ -60,18 +59,16 @@ public:
     [[nodiscard]] int getDefense() const { return defense; }
     [[nodiscard]] int getSpeed() const { return speed; }
     void setName(const std::string &setname) { this->name = setname; }
-    void setHealth(int sethealth) {
+    void setHealth(const int sethealth) {
         this->health = (sethealth>maxHealth) ? maxHealth : sethealth;
         if (health < 0) this->health=0;
     }
-    void setMaxHealth (int setmaxhealth) { this->maxHealth = setmaxhealth; }
-    void setAttackPower(int setattackpower) { this->attackPower = setattackpower; }
-    void setDefense(int setdefense) { this->defense = setdefense; }
-    void setSpeed(int setspeed) { this->speed = setspeed; }
+    void setMaxHealth (const int setmaxhealth) { this->maxHealth = setmaxhealth; }
+    void setAttackPower(const int setattackpower) { this->attackPower = setattackpower; }
+    void setDefense(const int setdefense) { this->defense = setdefense; }
+    void setSpeed(const int setspeed) { this->speed = setspeed; }
                                                             // ALTE METODE //
     [[nodiscard]] bool isAlive() const { return health > 0; }
-    //Metoda statica
-    static int getTotalCharacters() { return totalCharacters; };
     //Metoda helper pentru a calcula damage
     [[nodiscard]] int calculateDamage(const Character& target) const;
 };

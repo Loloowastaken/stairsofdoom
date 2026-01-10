@@ -10,10 +10,10 @@ class EnemyFactory {
 private:
     static std::mt19937 rng;
 
-    // Name generators
+    // Name generator
     static std::string generateName();
 
-    // Description generators
+    // Description generator
     static std::string generateDescription(Enemy::EnemyType type, Enemy::Difficulty diff, const std::string& name, int level);
 
 public:

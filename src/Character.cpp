@@ -1,24 +1,23 @@
 #include "Character.h"
 #include "Exception.h"
 
-int Character::totalCharacters = 0;
 
 Character::Character()
     : name("Unknown"), level(1), health(100), maxHealth(100),
       attackPower(10), defense(5), speed(10) {
-    totalCharacters++;
+
 }
 Character::Character(std::string name, const int level, const int health,
               const int attackPower, const int defense, const int speed)
         : name(std::move(name)), level(level), health(health), maxHealth(health),
           attackPower(attackPower), defense(defense), speed(speed) {
-    totalCharacters++;
+
 }
 Character::Character(const std::string& name, const int level)
         : Character(name, level, 50+level*10, 5+level*2, 2+level, 5+level) {
-    totalCharacters++;
+
 }
-Character::Character(const Character &other)
+Character::Character(const Character &other) // sau =default
         : name(other.name),
           level(other.level),
           health(other.health),
@@ -26,7 +25,7 @@ Character::Character(const Character &other)
           attackPower(other.attackPower),
           defense(other.defense),
           speed(other.speed) {
-    totalCharacters++;
+
 }
 Character& Character::operator=(const Character &other) {
     if (this != &other) {

@@ -17,7 +17,7 @@
         return *this;
     }
     Enemy::~Enemy() {
-        std::cout << "Enemy " << getName() << " destroyed\n";
+        std::cout << getName() << " was defeated!\n";
     }
     void Enemy::attack(Character& target) {
         std::cout << getName() << " (";
@@ -27,7 +27,7 @@
             case EnemyType::ORC: std::cout << "Orc"; break;
             case EnemyType::SLIME: std::cout << "Slime"; break;
         }
-        std::cout << ") attacks !\n";
+        std::cout << ") attacks!\n";
 
         Character::attack(target);
     }

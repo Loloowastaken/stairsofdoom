@@ -4,12 +4,12 @@
      Player::Player(const std::string &name)
         : Character(name, 1, 100, 15, 8, 12),
           gold(50), experience(0), experienceToNext(100), inventory("Player Inventory", 8), // <- change to test inventory capacity error
-          heroicStrikeCooldown(0), shieldBashCooldown(0) {
+          heroicStrikeCooldown(0), shieldBashCooldown(0), secondWindUses(2) {
     }
     Player::Player(const std::string &name, const int level)
         : Character(name, level, 80+level*20, 12+level*3, 6+level*2, 12+level),
           gold(level*25), experience(0), experienceToNext(level*100),
-          heroicStrikeCooldown(0), shieldBashCooldown(0) {
+          heroicStrikeCooldown(0), shieldBashCooldown(0), secondWindUses(2) {
     }
     Player& Player::operator=(const Player& other) {
         if (this != &other) {
@@ -138,8 +138,7 @@ void Player::showInventory() const {
         return true;
     }
     void Player::secondWind() {
-        static int usesRemaining = 2;
-        if (usesRemaining <= 0) {
+        if (secondWindUses <= 0) {
             throw AbilityException("Second Wind");
         }
         std::cout<<name<<" uses SECOND WIND!\n";
@@ -147,5 +146,5 @@ void Player::showInventory() const {
         health+=healAmount;
         if (health > maxHealth) health = maxHealth;
         std::cout<<"Healed for " << healAmount << " HP! (Now: " << health << "/" << maxHealth << ")\n";
-        usesRemaining--;
+        secondWindUses--;
     }

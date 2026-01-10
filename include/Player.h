@@ -11,6 +11,7 @@ class Player : public Character {
     ItemContainer<std::string> inventory;
     int heroicStrikeCooldown;
     int shieldBashCooldown;
+    int secondWindUses;
 public:
                                                             // CONSTRUCTORI (apeland clasa de baza) //
     //Constructor default
@@ -49,6 +50,6 @@ public:
     [[nodiscard]] int getGold() const { return gold; }
     [[nodiscard]] int getExp() const { return experience; }
     [[nodiscard]] int getExpToNext() const { return experienceToNext; }
-    void setGold(int setgold) { gold = setgold; }
-    void setExp(int setexp) { experience = setexp; }
+    void setGold(const int setgold) { gold = setgold; }
+    void setExp(const int setexp) { experience = setexp; }
 };

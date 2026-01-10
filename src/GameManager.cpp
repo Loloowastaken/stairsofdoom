@@ -125,11 +125,11 @@ void GameManager::exploreFloor() {
                 case 1: std::cout<<"Found a health potion!\n";
                     player->addItem("HealthPotion"); break;
                 case 2: std::cout<<"Found an attack potion!\n";
-                    player->addItem("AttackPotion"); break;
+                    player->addItem("AttackBoost"); break;
                 case 3: std::cout<<"Found a defense potion!\n";
-                    player->addItem("DefensePotion"); break;
+                    player->addItem("DefenseBoost"); break;
                 case 4: std::cout<<"Found a speed potion!\n";
-                    player->addItem("SpeedPotion"); break;
+                    player->addItem("SpeedBoost"); break;
                 default: std::cout<<"Found...nothing?\n"; break;
             }
         } else {
@@ -139,20 +139,19 @@ void GameManager::exploreFloor() {
 }
 void GameManager::combatPhase() {
     std::cout << "\n=== COMBAT START ===\n";
-
-    //Determine turn order
-    std::vector<Character*> turnOrder;
-    turnOrder.push_back(player.get());
-    for (auto& enemy : enemies) {
-        turnOrder.push_back(enemy.get());
-    }
-    //Sort by speed (descending)
-    std::ranges::sort(turnOrder, [](const Character* a, const Character* b) {
-        return a < b; // folosind operatorul nonmembru
-    });
     //Combat loop
     while (!enemies.empty() && player->isAlive()) {
         if (playerFled==true) {break;}
+        //Determine turn order
+        std::vector<Character*> turnOrder;
+        turnOrder.push_back(player.get());
+        for (auto& enemy : enemies) {
+            turnOrder.push_back(enemy.get());
+        }
+        //Sort by speed (descending)
+        std::ranges::sort(turnOrder, [](const Character* a, const Character* b) {
+            return a < b; // folosind operatorul nonmembru
+        });
         for (const auto character : turnOrder) {
             if (character->isAlive()) std::cout << *character ;
         }
@@ -224,14 +223,12 @@ void GameManager::playerTurn() {
                 player->attack(*enemies[targetChoice - 1]);
                 //Check if the enemy has died
                 if (!enemies[targetChoice - 1]->isAlive()) {
-                    std::cout << enemies[targetChoice-1]->getName() << "was defeated!\n";
                     enemiesDefeated++;
                     //Reward
                     if (const auto* enemy = dynamic_cast<Enemy*>(enemies[targetChoice-1].get())){
                         const int reward = Enemy::calculateReward(enemy->getType(), enemy->getDiff(), enemy->getLevel());
                         player->addGold(reward);
                         goldCollected+=reward;
-                        std::cout<<"You gained " << reward << " gold!\n";
                     }
                 }
             } break;
@@ -394,7 +391,6 @@ void GameManager::generateEnemies() {
         auto newEnemies = EnemyFactory::createEnemyGroup(currentFloor,1,3);
         enemies=std::move(newEnemies);
     }
-    std::cout<<"Encountered " << enemies.size() << " enemy(ies)!\n";
 }
 
 void GameManager::handleCombatVictory() {
@@ -412,11 +408,11 @@ void GameManager::handleCombatVictory() {
             case 1: std::cout<<"Found a health potion!\n";
                 player->addItem("HealthPotion"); break;
             case 2: std::cout<<"Found an attack potion!\n";
-                player->addItem("AttackPotion"); break;
+                player->addItem("AttackBoost"); break;
             case 3: std::cout<<"Found a defense potion!\n";
-                player->addItem("DefensePotion"); break;
+                player->addItem("DefenseBoost"); break;
             case 4: std::cout<<"Found a speed potion!\n";
-                player->addItem("SpeedPotion"); break;
+                player->addItem("SpeedBoost"); break;
             default: std::cout<<"Found...nothing?\n"; break;
         }
     }
@@ -431,7 +427,7 @@ void GameManager::handleFloorCompletion() {
     if (currentFloor<=totalFloors) {
         std::cout<<"Advancing to Floor " << currentFloor << "...\n";
         //tiny heal between floors
-        const int healAmount = player->getMaxHealth()*static_cast<int>(0.10);
+        const int healAmount = static_cast<int>(player->getMaxHealth()*0.10);
         player->setHealth(player->getHealth() + healAmount);
         std::cout<<"Recovered " << healAmount << " health while moving.\n";
 
